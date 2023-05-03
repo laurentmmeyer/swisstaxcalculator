@@ -1,17 +1,3 @@
-export const civilStatusOptions = [
-  { value: 's', label: 'Ledig' },
-  { value: 'm', label: 'Verheiratet' },
-  { value: 'rp', label: 'Eingetragene Partnerschaft' },
-  { value: 'c', label: 'Konkubinat' }
-];
-
-export const confessionOptions = [
-  { value: 'roman', label: 'Römisch-katholisch' },
-  { value: 'protestant', label: 'Reformiert' },
-  { value: 'christ', label: 'Christkatholisch' },
-  { value: 'other', label: 'Andere / Keine' }
-];
-
 export const childrenOptions = [
   { value: 0, label: 'Keine' },
   { value: 1, label: '1' },

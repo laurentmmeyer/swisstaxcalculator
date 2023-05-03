@@ -8,22 +8,17 @@
             <div class="grid grid-cols-2 gap-4">
               <FormKit
                 type="buttonSelect"
-                :name="nameof < TaxInput > ((x) => x.taxType)"
+                :name="nameof < TaxInput > ((x) => x.calculationType)"
                 label="Steuerart"
-                :options="[
-                  { value: 'ev', label: 'Einkommens- und Vermögenssteuer' },
-                  { value: 'pc', label: 'Vorsorge Kapitalsteuer' }
-                ]"
+                :options="getOptionsDe(taxInputData.calculationTypes)"
                 orientation="row"
                 option-label-classes="text-xs"
                 outer-class="col-span-2"
               />
               <FormKit
-                type="number"
+                type="select"
                 :name="nameof < TaxInput > ((x) => x.year)"
-                :step="1"
-                :min="2022"
-                :max="2022"
+                :options="taxInputData.years"
                 label="Steuerjahr"
               />
               <FormKit
@@ -39,12 +34,13 @@
                 :name="nameof < TaxInput > ((x) => x.relationship)"
                 type="buttonSelect"
                 label="Zivilstand"
-                :options="civilStatusOptions"
+                :options="getOptionsDe(taxInputData.relationships)"
                 outer-class="col-span-2"
                 orientation="row"
                 option-label-classes="text-xs"
               />
               <FormKit
+                v-model="children"
                 label="Anzahl Kinder"
                 :name="nameof < TaxInput > ((x) => x.children)"
                 type="select"
@@ -58,10 +54,16 @@
                 <FormKit v-for="person in personItems" :key="person" type="group">
                   <div
                     v-if="showSecondPerson"
-                    class="col-start-1 text-sm font-medium text-normal-600 -mb-3"
+                    class="col-start-1 col-span-2 p-1 text-sm font-medium text-normal-600 bg-normal-200 -mb-3"
                   >
                     Person {{ person }}
                   </div>
+                  <FormKit
+                    :key="person"
+                    type="hidden"
+                    :name="nameof < TaxInputPerson > ((x) => x.incomeType)"
+                    value="gross"
+                  />
                   <FormKit
                     :key="person"
                     type="numberSuffix"
@@ -78,7 +80,7 @@
                     type="buttonSelect"
                     :name="nameof < TaxInputPerson > ((x) => x.confession)"
                     validation-label="Konfession"
-                    :options="confessionOptions"
+                    :options="getOptionsDe(taxInputData.confessions)"
                     outer-class="col-span-2"
                     orientation="row"
                     option-label-classes="text-xs"
@@ -105,22 +107,37 @@
                     :max="10000"
                     :value="0"
                     label="PK-Beitrag Arbeitnehmer"
-                    outer-class="col-start-1"
                   />
 
-                  <FormKit
+                  <div class="col-start-1 col-span-2 text-sm font-medium text-normal-600 mt-1">
+                    Abzüge
+                  </div>
+
+                  <TaxDeductions
                     :key="person"
-                    type="numberSuffix"
-                    suffix="CHF"
-                    :name="nameof < TaxInputPerson > ((x) => x.pillar3aDeduction)"
-                    :step="1"
-                    :min="0"
-                    :max="10000000"
-                    :value="0"
-                    label="Säule 3a Beitrag"
+                    class="col-span-2"
+                    :deductions="taxInputData.deductionsPerson"
+                    :children-count="children"
                   />
                 </FormKit>
               </FormKit>
+              <div
+                v-if="showSecondPerson"
+                class="col-start-1 col-span-2 p-1 text-sm font-medium text-normal-600 bg-normal-200 -mb-3"
+              >
+                Gemeinsam
+              </div>
+
+              <div class="col-start-1 col-span-2 text-sm font-medium text-normal-600 mt-1">
+                Weitere Abzüge
+              </div>
+
+              <TaxDeductions
+                class="col-span-2"
+                :deductions="taxInputData.deductionsGeneral"
+                :children-count="children"
+              />
+
               <FormKit
                 type="numberSuffix"
                 suffix="CHF"
@@ -357,15 +374,18 @@
 <script setup lang="ts">
 import { FormKitNode } from '@formkit/core';
 import { nameof } from 'ts-simple-nameof';
-import { TaxInput, TaxRelationship, TaxResult, TaxInputPerson } from '~/lib/taxes/typesClient';
+import { taxInputData } from '~/lib/taxes/constants';
 import {
-  civilStatusOptions,
-  confessionOptions,
-  childrenOptions
-} from '~~/lib/components/listOptions';
+  TaxInput,
+  TaxRelationship,
+  TaxResult,
+  TaxInputPerson,
+  ValueLabelItem
+} from '~/lib/taxes/typesClient';
+import { childrenOptions } from '~~/lib/components/listOptions';
 
 const defaultInput: Partial<TaxInput> = {
-  taxType: 'ev',
+  calculationType: 'incomeAndWealth',
   children: 0,
   fortune: 250000,
   locationId: 66,
@@ -376,10 +396,14 @@ const defaultInput: Partial<TaxInput> = {
       age: 30,
       confession: 'roman',
       income: 100000,
-      incomeType: 'GROSS',
+      incomeType: 'gross',
       pkDeduction: 5000
     }
   ]
+};
+
+const getOptionsDe = (list: readonly ValueLabelItem<string>[]) => {
+  return list.map((item) => ({ value: item.value, label: item.label.de }));
 };
 
 const taxLocationsResult = useLazyFetch(`/api/locations`, { server: false });
@@ -393,6 +417,7 @@ const taxLocations = computed(
 );
 
 const civilStatus = ref<TaxRelationship>();
+const children = ref<number>();
 
 const showSecondPerson = computed(() => civilStatus.value === 'm' || civilStatus.value === 'rp');
 const personItems = computed(() => (showSecondPerson.value ? [1, 2] : [1]));

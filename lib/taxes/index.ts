@@ -3,10 +3,10 @@ import { calculatePensionCapitalTaxes } from './pensionCapital';
 import { TaxInput, TaxResult } from './typesClient';
 
 export const calculateTaxes = async (taxInput: TaxInput): Promise<TaxResult> => {
-  switch (taxInput.taxType) {
-    case 'ev':
+  switch (taxInput.calculationType) {
+    case 'incomeAndWealth':
       return await calculateTaxesIncomeAndFortune(taxInput);
-    case 'pc':
+    case 'capital':
       return await calculatePensionCapitalTaxes(taxInput);
   }
 

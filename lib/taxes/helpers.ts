@@ -1,3 +1,6 @@
+import { readdirSync } from 'fs';
+import path from 'path';
+import { dataParsedBasePath } from './constants';
 import { TaxInput } from './typesClient';
 
 export const isMarried = (taxInput: TaxInput) =>
@@ -20,4 +23,12 @@ export const validateTaxInput = (taxInput: TaxInput) => {
   if (personsCount === 2 && ['s', 'c'].includes(taxInput.relationship)) {
     throw new Error('Invalid relationship for two persons');
   }
+};
+
+export const getParsedTaxYears = () => {
+  const resolvedPath = path.resolve(`${dataParsedBasePath}`);
+  const content = readdirSync(resolvedPath, { withFileTypes: true });
+  return content
+    .filter((item) => item.isDirectory() && !isNaN(Number(item.name)))
+    .map((item) => Number(item.name));
 };

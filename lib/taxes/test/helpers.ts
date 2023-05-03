@@ -13,7 +13,7 @@ export const getTaxInputForTest = async ({
   children = 0,
   income = 0,
   income2 = 0,
-  incomeType = 'GROSS',
+  incomeType = 'gross',
   confession = 'other',
   confession2 = 'other',
   fortune = 0
@@ -34,7 +34,7 @@ export const getTaxInputForTest = async ({
   const persons = ['m', 'rp'].includes(relationship) ? [person1, person2] : [person1];
   const cantonId = await getCantonIdByCityId(cityId, year);
   return {
-    taxType: 'pc',
+    calculationType: 'incomeAndWealth',
     children,
     fortune,
     locationId: cityId,

@@ -111,11 +111,12 @@ const calculateTaxableAmount = async (taxInput: TaxInput) => {
   const deductionsIncome: TaxDeductionResultItem[] = [];
   const deductionsFortune: TaxDeductionResultItem[] = [];
 
-  if (!taxInput.persons.find((p) => p.incomeType === 'TAXABLE')) {
+  if (!taxInput.persons.find((p) => p.incomeType === 'taxable')) {
     taxDeductionDefinitions.forEach((definition) => {
       const deductionResultIncome = calculateDeductionByDefinition(
         definition,
         taxInput,
+        'EINKOMMENSSTEUER',
         grossNetDetails,
         deductionsIncomeCanton,
         deductionsIncomeBund
@@ -125,6 +126,7 @@ const calculateTaxableAmount = async (taxInput: TaxInput) => {
       const deductionResultFortune = calculateDeductionByDefinition(
         definition,
         taxInput,
+        'VERMOEGENSSTEUER',
         grossNetDetails,
         deductionsFortuneCanton
       );

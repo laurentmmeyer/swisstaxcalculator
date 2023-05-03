@@ -21,7 +21,7 @@ describe('taxes', () => {
     'for Direkte Bundessteuer, $relationship, $income -> $expected',
     async ({ relationship, income, expected }) => {
       const result = await calculateTaxesIncomeAndFortune(
-        await getTaxInputForTest({ cityId: 66, relationship, income, incomeType: 'TAXABLE' })
+        await getTaxInputForTest({ cityId: 66, relationship, income, incomeType: 'taxable' })
       );
 
       expect(result.taxesIncomeBund).toEqual(expected);
@@ -152,7 +152,7 @@ describe('taxes', () => {
           confession2: confession2 ?? confession,
           children,
           income,
-          incomeType: 'TAXABLE',
+          incomeType: 'taxable',
           fortune
         })
       );
@@ -285,7 +285,7 @@ describe('taxes', () => {
           confession,
           confession2: confession2 ?? confession,
           income,
-          incomeType: 'TAXABLE',
+          incomeType: 'taxable',
           fortune
         })
       );

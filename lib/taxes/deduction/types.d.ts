@@ -1,19 +1,22 @@
-import { TaxLocationRaw } from '../types';
+import { TaxLocationRaw, TaxType } from '../types';
 import { TaxInput, TaxGrossNetDetail } from '../typesClient';
 
 export interface TaxDeductionDefinitionInput {
   target?: string;
   amount?: number;
   multiplier?: number;
+  min?: number;
 }
 
 export interface TaxDeductionDefinition {
   id: string;
-  rule: (taxInput: TaxInput) => boolean;
+  rule: (taxInput: TaxInput, taxType: TaxType) => boolean;
   input: (
     taxInput: TaxInput,
     grossDeductions: TaxGrossNetDetail[]
   ) => TaxDeductionDefinitionInput[];
+  applyAlways?: boolean;
+  name?: string;
 }
 
 export interface TaxDeductionTableItem {
