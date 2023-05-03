@@ -27,20 +27,24 @@ export const taxDeductionDefinitions: TaxDeductionDefinition[] = [
     name: taxDeductionsPerson.otherProfessionalExpenses.label.de,
     rule: () => true,
     input: (_, grossDeductions) =>
-      grossDeductions.map((grossDeduction, index) => ({
-        target: `P${index + 1}`,
-        amount: grossDeduction.netIncome,
-        min: grossDeduction.person.deductions?.otherProfessionalExpenses
-      }))
+      grossDeductions
+        .filter((grossDeduction) => grossDeduction.netIncome > 0)
+        .map((grossDeduction, index) => ({
+          target: `P${index + 1}`,
+          amount: grossDeduction.netIncome,
+          min: grossDeduction.person.deductions?.otherProfessionalExpenses
+        }))
   },
   {
     id: 'Fahrkosten_EK',
     rule: (taxInput) => taxInput.persons.some((p) => (p.deductions?.travelExpenses ?? 0) > 0),
     input: (_, grossDeductions) =>
-      grossDeductions.map((grossDeduction, index) => ({
-        target: `P${index + 1}`,
-        amount: grossDeduction.person.deductions?.travelExpenses
-      }))
+      grossDeductions
+        .filter((grossDeduction) => grossDeduction.netIncome > 0)
+        .map((grossDeduction, index) => ({
+          target: `P${index + 1}`,
+          amount: grossDeduction.person.deductions?.travelExpenses
+        }))
   },
   {
     id: 'NebenErw_EK',
@@ -177,11 +181,13 @@ export const taxDeductionDefinitions: TaxDeductionDefinition[] = [
     rule: (taxInput, taxType) =>
       taxType === 'EINKOMMENSSTEUER' &&
       taxInput.persons.some((p) => p.deductions?.mealCosts !== undefined),
-    input: (taxInput, _) =>
-      taxInput.persons.map((person, index) => ({
-        target: `P${index + 1}`,
-        amount: person.deductions?.mealCosts
-      }))
+    input: (_, grossDeductions) =>
+      grossDeductions
+        .filter((grossDeduction) => grossDeduction.netIncome > 0)
+        .map((grossDeduction, index) => ({
+          target: `P${index + 1}`,
+          amount: grossDeduction.person.deductions?.mealCosts
+        }))
   },
   {
     id: 'Custom_OtherDeductions_Person_EK',

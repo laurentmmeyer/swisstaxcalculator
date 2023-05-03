@@ -182,7 +182,7 @@
 
             <!-- Taxes city -->
             <div class="col-span-2 mt-4"></div>
-            <div class="font-medium">Gemeindesteuern</div>
+            <div class="font-medium">Gemeindesteuer</div>
             <div class="font-medium font-numerictab text-right">
               {{ displayCurrencyShort(taxes.taxesIncomeCity + taxes.taxesFortuneCity) }}
             </div>
@@ -210,7 +210,7 @@
 
             <!-- Taxes Church -->
             <div class="col-span-2 mt-4"></div>
-            <div class="font-medium">Kirchensteuern</div>
+            <div class="font-medium">Kirchensteuer</div>
             <div class="font-medium font-numerictab text-right">
               {{ displayCurrencyShort(taxes.taxesIncomeChurch + taxes.taxesFortuneChurch) }}
             </div>
