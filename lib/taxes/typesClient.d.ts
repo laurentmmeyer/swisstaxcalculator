@@ -1,5 +1,3 @@
-import { TaxDeductionPerPersonInput, TaxDeductionGeneralInput } from './deduction/types';
-
 export type TaxCalculationType = 'incomeAndWealth' | 'capital';
 export type TaxRelationship = 's' | 'm' | 'rp' | 'c'; // Alleinstehend, Verheiratet, Eingetragene Partnerschaft, Konkubinat
 export type TaxConfession = 'christ' | 'roman' | 'protestant' | 'other'; // Christkatholisch, Römisch-katholisch, Reformiert, Sonstige/Keine
