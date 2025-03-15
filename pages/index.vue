@@ -383,6 +383,8 @@ import {
   ValueLabelItem
 } from '~/lib/taxes/typesClient';
 import { childrenOptions } from '~~/lib/components/listOptions';
+import { getTaxLocations } from '~~/lib/taxes/location';
+import { calculateTaxes } from '~~/lib/taxes';
 
 const defaultInput: Partial<TaxInput> = {
   calculationType: 'incomeAndWealth',
@@ -406,11 +408,12 @@ const getOptionsDe = (list: readonly ValueLabelItem<string>[]) => {
   return list.map((item) => ({ value: item.value, label: item.label.de }));
 };
 
-const taxLocationsResult = useLazyFetch(`/api/locations`, { server: false });
+const taxLocationsResult = await getTaxLocations(2024);
+// const taxLocationsResult = useLazyFetch(`/api/locations`, { server: false });
 
 const taxLocations = computed(
   () =>
-    taxLocationsResult.data.value?.map((item) => ({
+    taxLocationsResult!.map((item) => ({
       value: item.BfsID,
       label: `${item.BfsName} (${item.Canton})`
     })) ?? []
@@ -510,17 +513,18 @@ const submit = async (value: any, node?: FormKitNode) => {
   // Reset errors
   node?.setErrors([]);
 
-  // Add cantonId accordign to locationId
+  // Add cantonId according to locationId
   const taxInput: Partial<TaxInput> = {
     ...value,
-    cantonId: taxLocationsResult.data.value?.find((x) => x.BfsID === value.locationId)?.CantonID
+    cantonId: taxLocationsResult?.find((x) => x.BfsID === value.locationId)?.CantonID
   };
 
   try {
-    const result = await $fetch(`/api/taxes/`, {
-      method: 'post',
-      body: taxInput
-    });
+    // const result = await $fetch(`/api/taxes/`, {
+    //   method: 'post',
+    //   body: taxInput
+    // });
+    const result = await calculateTaxes(taxInput as TaxInput);
 
     taxes.value = result;
   } catch (error: any) {

@@ -1,5 +1,4 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { readFile } from '~~/lib/utils/filemocker';
 import { TaxTarif, TaxTarifGroup } from './types';
 import { dataParsedBasePath } from '../constants';
 import { TaxType } from '../types';
@@ -10,10 +9,9 @@ const loadTarifsIfRequired = async (cantonId: number, year: number) => {
   if (taxTarifsByYearAndCanton.get(year)?.has(cantonId)) return;
 
   // Load tarifs from file
-  const resolvedPath = path.resolve(`${dataParsedBasePath}${year}/tarifs/${cantonId}.json`);
-  const tarifs: TaxTarif[] = JSON.parse(
-    (await readFile(new URL(resolvedPath, import.meta.url))).toString()
-  );
+  const filePath = `${dataParsedBasePath}${year}/tarifs/${cantonId}.json`;
+  const fileContents = await readFile(filePath);
+  const tarifs: TaxTarif[] = JSON.parse(fileContents);
 
   let taxTarifsByCanton = taxTarifsByYearAndCanton.get(year);
 

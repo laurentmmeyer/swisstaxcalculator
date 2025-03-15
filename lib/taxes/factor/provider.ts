@@ -1,5 +1,4 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { readFile } from '~~/lib/utils/filemocker';
 import { TaxFactors } from './types';
 import { dataParsedBasePath } from '../constants';
 import { TaxInput } from '../typesClient';
@@ -12,10 +11,11 @@ const loadFactorsIfRequired = async (cantonId: number, year: number) => {
   if (factorsByCity) return;
 
   // Load factors from file
-  const resolvedPath = path.resolve(`${dataParsedBasePath}${year}/factors/${cantonId}.json`);
-  const factors: TaxFactors[] = JSON.parse(
-    (await readFile(new URL(resolvedPath, import.meta.url))).toString()
-  );
+  const filePath = `${dataParsedBasePath}${year}/factors/${cantonId}.json`;
+
+  // Use our environment-aware readFile helper.
+  const fileContents = await readFile(filePath);
+  const factors: TaxFactors[] = JSON.parse(fileContents);
 
   // Create collections
   if (!factorsByCantonAndCity) {
