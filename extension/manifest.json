@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "swisstaxcalculator",
+  "version": "1.0",
+  "description": "Calculates and displays tax information for real estate websites.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.realestate.com/*",
+    "*://*.anotherrealestate.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Swiss Tax Calculator",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.realestate.com/*",
+        "*://*.anotherrealestate.com/*"
+      ],
+      "js": ["contentScript.js"]
+    }
+  ]
+}

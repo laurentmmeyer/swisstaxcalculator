@@ -21,6 +21,7 @@
     "@typescript-eslint/parser": "^5.58.0",
     "@vue/eslint-config-typescript": "^11.0.2",
     "autoprefixer": "^10.4.14",
+    "cheerio": "^1.0.0",
     "cpy-cli": "^4.2.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
@@ -41,6 +42,8 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "build:extension": "npx nuxi generate && cp -r .output/public/* extension/options && node externalizeInlineScripts.js",
+    "build:serve": "yarn build:extension && python3 -m http.server 9000 -d extension",
     "checktypes": "vue-tsc --noemit",
     "dev": "nuxt dev --experimental-json-modules",
     "generate": "nuxt generate",

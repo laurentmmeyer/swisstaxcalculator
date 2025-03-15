@@ -3,9 +3,7 @@ export default defineNuxtConfig({
   experimental: {
     noVueServer: false // Is set to true in the copyDataModule
   },
-  routeRules: {
-    '/api/**': { security: { corsHandler: { origin: '*' } } }
-  },
+  ssr: false,
   devServer: {
     port: 3001
   },
@@ -31,7 +29,13 @@ export default defineNuxtConfig({
   build: {
     analyze: true
   },
+  vite: {
+    build: {
+      minify: false
+    }
+  },
   app: {
+    baseURL: '/options/',
     head: {
       // Font for tailwind ui
       link: [

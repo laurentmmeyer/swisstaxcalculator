@@ -1,0 +1,1 @@
+window.__NUXT__={_errors:{},serverRendered:false,data:{},state:{},config:{public:{},app:{baseURL:"\u002Foptions\u002F",buildAssetsDir:"\u002F_nuxt\u002F",cdnURL:""}}}
