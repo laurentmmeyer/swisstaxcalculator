@@ -1,6 +1,5 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
-import { TaxDeductionTableExtended, TaxDeductionTable } from './types';
+import { readFile } from '~~/lib/utils/filemocker';
+import { TaxDeductionTable, TaxDeductionTableExtended } from './types';
 import { dataParsedBasePath } from '../constants';
 import { TaxType } from '../types';
 
@@ -12,10 +11,9 @@ const taxDeductionsByYearAndCanton = new Map<
 const loadDeductionsIfRequired = async (cantonId: number, year: number) => {
   if (taxDeductionsByYearAndCanton.get(year)?.has(cantonId)) return;
 
-  const resolvedPath = path.resolve(`${dataParsedBasePath}${year}/deductions/${cantonId}.json`);
-  const deductionsRaw: TaxDeductionTable[] = JSON.parse(
-    (await readFile(new URL(resolvedPath, import.meta.url))).toString()
-  );
+  const filePath = `${dataParsedBasePath}${year}/deductions/${cantonId}.json`;
+  const fileContents = await readFile(filePath);
+  const deductionsRaw: TaxDeductionTable[] = JSON.parse(fileContents);
 
   let taxDeductionsByCanton = taxDeductionsByYearAndCanton.get(year);
 

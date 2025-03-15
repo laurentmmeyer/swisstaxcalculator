@@ -1,5 +1,4 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { readFile } from '~~/lib/utils/filemocker';
 import { dataParsedBasePath } from '../constants';
 import { TaxLocation } from '../typesClient';
 
@@ -11,10 +10,9 @@ const loadLocationsIfRequired = async (year: number) => {
   if (locationsByYearAndCity.has(year)) return;
 
   // Load locations from file
-  const resolvedPath = path.resolve(`${dataParsedBasePath}${year}/locations.json`);
-  const locations: TaxLocation[] = JSON.parse(
-    (await readFile(new URL(resolvedPath, import.meta.url))).toString()
-  );
+  const filePath = `${dataParsedBasePath}${year}/locations.json`;
+  const fileContents = await readFile(filePath);
+  const locations: TaxLocation[] = JSON.parse(fileContents);
 
   const locationsByCity = new Map<number, TaxLocation>();
   locationsByYearAndCity.set(year, locationsByCity);

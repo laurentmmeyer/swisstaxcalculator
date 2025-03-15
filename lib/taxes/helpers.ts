@@ -25,10 +25,10 @@ export const validateTaxInput = (taxInput: TaxInput) => {
   }
 };
 
-export const getParsedTaxYears = () => {
-  const resolvedPath = path.resolve(`${dataParsedBasePath}`);
-  const content = readdirSync(resolvedPath, { withFileTypes: true });
-  return content
-    .filter((item) => item.isDirectory() && !isNaN(Number(item.name)))
-    .map((item) => Number(item.name));
-};
+// export const getParsedTaxYears = () => {
+//   const resolvedPath = path.resolve(`${dataParsedBasePath}`);
+//   const content = readdirSync(resolvedPath, { withFileTypes: true });
+//   return content
+//     .filter((item) => item.isDirectory() && !isNaN(Number(item.name)))
+//     .map((item) => Number(item.name));
+// };

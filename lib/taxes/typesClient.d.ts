@@ -7,7 +7,6 @@ export interface ValueLabelItem<T extends string> {
   value: T;
   label: { de: string };
 }
-const;
 
 export type TaxCalculationTypeList = readonly ValueLabelItem<TaxCalculationType>[];
 export type TaxRelationshipList = readonly ValueLabelItem<TaxRelationship>[];
