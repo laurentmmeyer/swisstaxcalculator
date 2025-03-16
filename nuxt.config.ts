@@ -29,11 +29,6 @@ export default defineNuxtConfig({
   build: {
     analyze: true
   },
-  vite: {
-    build: {
-      minify: false
-    }
-  },
   app: {
     baseURL: '/options/',
     head: {
