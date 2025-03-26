@@ -83,6 +83,7 @@ export interface TaxLocation {
   CantonID: number;
   BfsName: string;
   Canton: string;
+  ZipCodes: { postalCode: string; city: string }[];
 }
 
 export interface TaxDeductionPerPersonInput {

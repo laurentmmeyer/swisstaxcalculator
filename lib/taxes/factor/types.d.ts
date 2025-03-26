@@ -41,3 +41,10 @@ export interface TaxFactorsRaw {
   ProfitTaxRateChurch: number;
   Location: TaxLocationRaw;
 }
+
+// Define the structure of the CSV row
+interface LocationsRaw {
+  'BFS-Nr': string;
+  PLZ: string;
+  Gemeindename: string;
+}

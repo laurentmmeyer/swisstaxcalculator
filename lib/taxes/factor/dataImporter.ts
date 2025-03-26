@@ -1,9 +1,16 @@
 /* eslint-disable no-console */
+import csv from 'csv-parser';
 import fs from 'fs';
 import path from 'path';
-import { TaxFactors, TaxFactorsRaw } from './types';
+import { LocationsRaw, TaxFactors, TaxFactorsRaw } from './types';
 import { dataParsedBasePath, dataRawBasePath } from '../constants';
 import { TaxLocation } from '../typesClient';
+
+const loadFactorsJson = (year: number) => {
+  const data = fs.readFileSync(path.resolve(`${dataRawBasePath}${year}/factors.json`));
+  const tarifs = JSON.parse(data.toString()) as { response: TaxFactorsRaw[] };
+  return tarifs.response;
+};
 
 // - Load the raw tarifs from the tarifs.json file in the data folder by the year of the tarif
 // - export a json per item into the data folder with a subfolder by year
@@ -12,62 +19,93 @@ export const importAndParseFactors = (year: number) => {
   const factors = loadFactorsJson(year);
   console.log(`Loaded ${factors.length} factors`);
 
-  const locations = factors.reduce((acc, factorRaw) => {
-    const location: TaxLocation = {
-      TaxLocationID: factorRaw.Location.TaxLocationID,
-      BfsID: factorRaw.Location.BfsID,
-      BfsName: factorRaw.Location.BfsName,
-      CantonID: factorRaw.Location.CantonID,
+  // Initialize an object to hold the grouped data
+  const bfsToPlz: { [key: string]: { postalCode: string; city: string }[] } = {};
+  const resolvedPath = path.resolve(`${dataRawBasePath}/AMTOVZ_CSV_LV95.csv`);
 
-      Canton: factorRaw.Location.Canton
-    };
+  // Read the CSV file and process the data
+  fs.createReadStream(resolvedPath)
+    .pipe(csv({ separator: ';' }))
+    .on('data', (row: LocationsRaw) => {
+      const bfsNr = row['BFS-Nr'];
+      const plz = row.PLZ;
+      const gemeindename = row.Gemeindename;
 
-    acc.push(location);
-    return acc;
-  }, [] as TaxLocation[]);
-  saveLocationsJson(year, 'locations', locations);
-  console.log(`Saved ${locations.length} locations`);
-
-  const factorsByCanton = factors.reduce((acc, factorRaw) => {
-    factorRaw = correctFactors(factorRaw);
-    const cantonId = factorRaw.Location.CantonID;
-
-    if (!acc[cantonId]) {
-      acc[cantonId] = [];
-    }
-
-    // copy the raw data into a new object
-    const factors: TaxFactors = {
-      FortuneRateProtestant: factorRaw.FortuneRateProtestant,
-      ProfitTaxRateCanton: factorRaw.ProfitTaxRateCanton,
-      FortuneRateRoman: factorRaw.FortuneRateRoman,
-      CapitalTaxRateChurch: factorRaw.CapitalTaxRateChurch,
-      IncomeRateCanton: factorRaw.IncomeRateCanton,
-      ProfitTaxRateCity: factorRaw.ProfitTaxRateCity,
-      CapitalTaxRateCity: factorRaw.CapitalTaxRateCity,
-      FortuneRateCanton: factorRaw.FortuneRateCanton,
-      IncomeRateChrist: factorRaw.IncomeRateChrist,
-      CapitalTaxRateCanton: factorRaw.CapitalTaxRateCanton,
-      FortuneRateChrist: factorRaw.FortuneRateChrist,
-      IncomeRateProtestant: factorRaw.IncomeRateProtestant,
-      IncomeRateCity: factorRaw.IncomeRateCity,
-      IncomeRateRoman: factorRaw.IncomeRateRoman,
-      FortuneRateCity: factorRaw.FortuneRateCity,
-      ProfitTaxRateChurch: factorRaw.ProfitTaxRateChurch,
-      Location: {
-        BfsID: factorRaw.Location.BfsID
+      if (!bfsToPlz[bfsNr]) {
+        bfsToPlz[bfsNr] = [];
       }
-    };
+      const uniquePlz = new Set(bfsToPlz[bfsNr].map(item => item.postalCode));
+      if (!uniquePlz.has(plz)) {
+        bfsToPlz[bfsNr].push({ postalCode: plz, city: gemeindename });
+      }
+    })
+    .on('end', () => {
+      // Convert the object to a JSON string
+      const jsonOutput = JSON.stringify(bfsToPlz, null, 4);
 
-    acc[cantonId].push(factors);
+      // Optionally, write the JSON output to a file
+      const filePath = path.resolve(`${dataParsedBasePath}/postalCodes/`);
+      fs.mkdirSync(filePath, { recursive: true });
+      fs.writeFileSync(`${filePath}/postalCodes.json`, jsonOutput);
 
-    return acc;
-  }, {} as Record<number, TaxFactors[]>);
-  for (const canton in factorsByCanton) {
-    saveFactorsJson(year, canton, factorsByCanton[canton]);
-  }
+      // Populate the locations array with the required data
+      const locations = factors.reduce((acc, factorRaw) => {
+        const location: TaxLocation = {
+          TaxLocationID: factorRaw.Location.TaxLocationID,
+          BfsID: factorRaw.Location.BfsID,
+          BfsName: factorRaw.Location.BfsName,
+          CantonID: factorRaw.Location.CantonID,
+          ZipCodes: bfsToPlz[factorRaw.Location.BfsID],
+          Canton: factorRaw.Location.Canton
+        };
 
-  console.log('Finished loading factors');
+        acc.push(location);
+        return acc;
+      }, [] as TaxLocation[]);
+      saveLocationsJson(year, 'locations', locations);
+      console.log(`Saved ${locations.length} locations`);
+
+      const factorsByCanton = factors.reduce((acc, factorRaw) => {
+        factorRaw = correctFactors(factorRaw);
+        const cantonId = factorRaw.Location.CantonID;
+
+        if (!acc[cantonId]) {
+          acc[cantonId] = [];
+        }
+
+        // copy the raw data into a new object
+        const factors: TaxFactors = {
+          FortuneRateProtestant: factorRaw.FortuneRateProtestant,
+          ProfitTaxRateCanton: factorRaw.ProfitTaxRateCanton,
+          FortuneRateRoman: factorRaw.FortuneRateRoman,
+          CapitalTaxRateChurch: factorRaw.CapitalTaxRateChurch,
+          IncomeRateCanton: factorRaw.IncomeRateCanton,
+          ProfitTaxRateCity: factorRaw.ProfitTaxRateCity,
+          CapitalTaxRateCity: factorRaw.CapitalTaxRateCity,
+          FortuneRateCanton: factorRaw.FortuneRateCanton,
+          IncomeRateChrist: factorRaw.IncomeRateChrist,
+          CapitalTaxRateCanton: factorRaw.CapitalTaxRateCanton,
+          FortuneRateChrist: factorRaw.FortuneRateChrist,
+          IncomeRateProtestant: factorRaw.IncomeRateProtestant,
+          IncomeRateCity: factorRaw.IncomeRateCity,
+          IncomeRateRoman: factorRaw.IncomeRateRoman,
+          FortuneRateCity: factorRaw.FortuneRateCity,
+          ProfitTaxRateChurch: factorRaw.ProfitTaxRateChurch,
+          Location: {
+            BfsID: factorRaw.Location.BfsID
+          }
+        };
+
+        acc[cantonId].push(factors);
+
+        return acc;
+      }, {} as Record<number, TaxFactors[]>);
+      for (const canton in factorsByCanton) {
+        saveFactorsJson(year, canton, factorsByCanton[canton]);
+      }
+
+      console.log('Finished loading factors');
+    });
 };
 
 const correctFactors = (factors: TaxFactorsRaw) => {
@@ -87,12 +125,6 @@ const correctFactors = (factors: TaxFactorsRaw) => {
   }
 
   return factors;
-};
-
-const loadFactorsJson = (year: number) => {
-  const data = fs.readFileSync(path.resolve(`${dataRawBasePath}${year}/factors.json`));
-  const tarifs = JSON.parse(data.toString()) as { response: TaxFactorsRaw[] };
-  return tarifs.response;
 };
 
 const saveLocationsJson = (year: number, filename: string, payload: any) => {

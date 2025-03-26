@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { importAndParseDeductions } from './deduction/dataImporter';
 import { importAndParseFactors } from './factor/dataImporter';
+import { importAndParsePostalCodes } from './postal/dataImporter';
 import { importAndParseTarifs } from './tarif/dataImporter';
 
 const yearInput = Number.parseInt(process.argv[2]);
@@ -11,5 +12,6 @@ if (!yearInput) {
   importAndParseTarifs(yearInput);
   importAndParseFactors(yearInput);
   importAndParseDeductions(yearInput);
+  importAndParsePostalCodes();
 }
 export {};

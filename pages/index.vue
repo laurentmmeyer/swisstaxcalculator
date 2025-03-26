@@ -2,9 +2,10 @@
   <div class="w-full max-w-5xl mx-auto px-3 sm:px-8">
     <div class="mb-40">
       <h1 class="text-2xl mt-9 mb-4">Steuerrechner</h1>
+      <input v-model="testPlz">
       <div class="flex flex-wrap justify-between gap-9">
         <div class="max-w-sm">
-          <FormKit :value="defaultInput" type="form" :actions="false" @submit="submit">
+          <FormKit v-model="defaultInput" type="form" :actions="false" @submit="submit">
             <div class="grid grid-cols-2 gap-4">
               <FormKit
                 type="buttonSelect"
@@ -383,10 +384,12 @@ import {
   ValueLabelItem
 } from '~/lib/taxes/typesClient';
 import { childrenOptions } from '~~/lib/components/listOptions';
+import { calculateTaxes, getBfsIdForPostalCode, getBfsIdsForPostalCode } from '~~/lib/taxes';
 import { getTaxLocations } from '~~/lib/taxes/location';
-import { calculateTaxes } from '~~/lib/taxes';
 
-const defaultInput: Partial<TaxInput> = {
+let testPlz = "8610";
+
+const defaultInput = ref<Partial<TaxInput>>({
   calculationType: 'incomeAndWealth',
   children: 0,
   fortune: 250000,
@@ -402,13 +405,20 @@ const defaultInput: Partial<TaxInput> = {
       pkDeduction: 5000
     }
   ]
-};
+});
+
+// On mounted, retrieve the saved value from Chrome storage
+chrome.storage.sync.get('taxInput', (data:any) => {
+  if (data && data.taxInput) {
+    defaultInput.value = data.taxInput;
+  }
+});
 
 const getOptionsDe = (list: readonly ValueLabelItem<string>[]) => {
   return list.map((item) => ({ value: item.value, label: item.label.de }));
 };
 
-const taxLocationsResult = await getTaxLocations(2024);
+const taxLocationsResult = await getTaxLocations(2025);
 // const taxLocationsResult = useLazyFetch(`/api/locations`, { server: false });
 
 const taxLocations = computed(
@@ -513,10 +523,14 @@ const submit = async (value: any, node?: FormKitNode) => {
   // Reset errors
   node?.setErrors([]);
 
+  const maybeBfsId = await getBfsIdsForPostalCode(testPlz, value.year!);
+  const bfsId = maybeBfsId![0];
+
   // Add cantonId according to locationId
   const taxInput: Partial<TaxInput> = {
     ...value,
-    cantonId: taxLocationsResult?.find((x) => x.BfsID === value.locationId)?.CantonID
+    cantonId: taxLocationsResult?.find((x) => x.BfsID === bfsId)?.CantonID,
+    locationId: bfsId,
   };
 
   try {
@@ -524,6 +538,9 @@ const submit = async (value: any, node?: FormKitNode) => {
     //   method: 'post',
     //   body: taxInput
     // });
+    chrome.storage.sync.set({ taxInput }, function() {
+      console.log('Valeur sauvegardée : ' + JSON.stringify(taxInput));
+    });
     const result = await calculateTaxes(taxInput as TaxInput);
 
     taxes.value = result;

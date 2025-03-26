@@ -1,6 +1,7 @@
 import { calculateTaxesIncomeAndFortune } from './income';
 import { calculatePensionCapitalTaxes } from './pensionCapital';
 import { TaxInput, TaxResult } from './typesClient';
+import { bfsIdForPostalCode, bfsIdsForPostalCode } from '~/lib/taxes/location';
 
 export const calculateTaxes = async (taxInput: TaxInput): Promise<TaxResult> => {
   switch (taxInput.calculationType) {
@@ -11,4 +12,12 @@ export const calculateTaxes = async (taxInput: TaxInput): Promise<TaxResult> => 
   }
 
   throw new Error('Tax type not supported');
+};
+
+export const getBfsIdForPostalCode = async (postalCode: string, city: string, year:number) : Promise<number|null> => {
+  return await bfsIdForPostalCode(postalCode, city, year);
+};
+
+export const getBfsIdsForPostalCode = async (postalCode: string, year:number) : Promise<number[]|null> => {
+  return await bfsIdsForPostalCode(postalCode, year);
 };

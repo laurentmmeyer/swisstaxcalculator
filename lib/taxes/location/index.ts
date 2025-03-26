@@ -35,3 +35,43 @@ export const getTaxLocations = async (year: number) => {
   await loadLocationsIfRequired(year);
   return locationsByYear.get(year);
 };
+
+export const bfsIdForPostalCode = async (postalCode: string, city: string, year: number): Promise<number|null> => {
+  await loadLocationsIfRequired(year);
+  const locations = locationsByYear.get(year);
+
+  if (locations) {
+    for (const location of locations) {
+      const matchingZipCode = location.ZipCodes.find(
+        zipCode => zipCode.postalCode === postalCode && zipCode.city === city
+      );
+      if (matchingZipCode) {
+        return location.BfsID;
+      }
+    }
+  }
+
+  return null;
+};
+
+export const bfsIdsForPostalCode = async (postalCode: string, year: number): Promise<number[] | null> => {
+  await loadLocationsIfRequired(year);
+  const locations = locationsByYear.get(year);
+
+  if (locations) {
+    const matchingBfsIds: number[] = [];
+
+    for (const location of locations) {
+      const matchingZipCode = location.ZipCodes?.find(
+        zipCode => zipCode.postalCode === postalCode
+      );
+      if (matchingZipCode) {
+        matchingBfsIds.push(location.BfsID);
+      }
+    }
+
+    return matchingBfsIds.length > 0 ? matchingBfsIds : null;
+  }
+
+  return null;
+};
