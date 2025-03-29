@@ -3,7 +3,19 @@ export const readFile = async (filePath: string): Promise<string> => {
     // Server-side: Use Node's fs/promises
     const { readFile } = await import('fs/promises');
     return readFile(filePath, 'utf-8');
-  } else {
+  }
+
+  if (chrome.runtime){
+    // TODO careful with options
+    const inExtensionFilePath = chrome.runtime.getURL("/options/"+filePath.replace('./', ''));
+    const response = await fetch(inExtensionFilePath);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file at ${filePath}`);
+    }
+    return response.text();
+  }
+
+  else {
     // Client-side: Use fetch
     const response = await fetch(filePath);
     if (!response.ok) {

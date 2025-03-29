@@ -22,13 +22,23 @@
     "page": "options/index.html",
     "open_in_tab": true
   },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "options/data/**"
+      ],
+      "matches": ["*://*.newhome.ch/*"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": [
-        "*://*.realestate.com/*",
-        "*://*.anotherrealestate.com/*"
+        "*://*.newhome.ch/*"
       ],
-      "js": ["contentScript.js"]
+      "js": [
+        "contentScript.bundle.js"
+      ]
     }
   ]
 }

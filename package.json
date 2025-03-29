@@ -44,7 +44,8 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "build:extension": "npx nuxi generate && cp -r .output/public/* extension/options && node externalizeInlineScripts.js",
+    "build:lib": "esbuild lib/taxes/index.ts --bundle --platform=browser --outfile=extension/taxlib.js --external:fs/promises --format=esm && esbuild extension/contentScript.js --bundle --format=iife  --platform=browser --outfile=extension/contentScript.bundle.js --external:fs/promises",
+    "build:extension": "npx nuxi generate && cp -r .output/public/* extension/options && node externalizeInlineScripts.js && yarn build:lib",
     "build:serve": "yarn build:extension && python3 -m http.server 9000 -d extension",
     "checktypes": "vue-tsc --noemit",
     "dev": "nuxt dev --experimental-json-modules",

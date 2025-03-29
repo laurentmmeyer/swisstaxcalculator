@@ -1,7 +1,7 @@
 import { calculateTaxesIncomeAndFortune } from './income';
 import { calculatePensionCapitalTaxes } from './pensionCapital';
 import { TaxInput, TaxResult } from './typesClient';
-import { bfsIdForPostalCode, bfsIdsForPostalCode } from '~/lib/taxes/location';
+import { bfsIdForPostalCode, bfsIdsForPostalCode, getTaxLocations } from '~/lib/taxes/location';
 
 export const calculateTaxes = async (taxInput: TaxInput): Promise<TaxResult> => {
   switch (taxInput.calculationType) {
@@ -21,3 +21,5 @@ export const getBfsIdForPostalCode = async (postalCode: string, city: string, ye
 export const getBfsIdsForPostalCode = async (postalCode: string, year:number) : Promise<number[]|null> => {
   return await bfsIdsForPostalCode(postalCode, year);
 };
+
+export const getTaxesLocationForYear = getTaxLocations;
