@@ -2,7 +2,6 @@
   <div class="w-full max-w-5xl mx-auto px-3 sm:px-8">
     <div class="mb-40">
       <h1 class="text-2xl mt-9 mb-4">Steuerrechner</h1>
-      <input v-model="testPlz">
       <div class="flex flex-wrap justify-between gap-9">
         <div class="max-w-sm">
           <FormKit v-model="defaultInput" type="form" :actions="false" @submit="submit">
@@ -26,6 +25,7 @@
                 type="autocomplete"
                 :name="nameof < TaxInput > ((x) => x.locationId)"
                 label="Steuergemeinde"
+                :value="defaultInput.locationId"
                 :options="taxLocations"
                 outer-class="col-span-2"
                 :filter-min-length="2"
@@ -387,8 +387,6 @@ import { childrenOptions } from '~~/lib/components/listOptions';
 import { calculateTaxes, getBfsIdForPostalCode, getBfsIdsForPostalCode } from '~~/lib/taxes';
 import { getTaxLocations } from '~~/lib/taxes/location';
 
-let testPlz = "8610";
-
 const defaultInput = ref<Partial<TaxInput>>({
   calculationType: 'incomeAndWealth',
   children: 0,
@@ -523,14 +521,10 @@ const submit = async (value: any, node?: FormKitNode) => {
   // Reset errors
   node?.setErrors([]);
 
-  const maybeBfsId = await getBfsIdsForPostalCode(testPlz, value.year!);
-  const bfsId = maybeBfsId![0];
-
   // Add cantonId according to locationId
   const taxInput: Partial<TaxInput> = {
     ...value,
-    cantonId: taxLocationsResult?.find((x) => x.BfsID === bfsId)?.CantonID,
-    locationId: bfsId,
+    cantonId: taxLocationsResult?.find((x) => x.BfsID === value.locationId)?.CantonID
   };
 
   try {
