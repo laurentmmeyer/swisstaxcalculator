@@ -2175,25 +2175,33 @@
     const tarifTables = taxTarifsByYearAndCanton.get(year)?.get(cantonId)?.get(taxType);
     if (!tarifTables)
       throw new Error(`No tarifs found for cantonId: ${cantonId}, tarifType: ${taxType}`);
-    const tarifTable = tarifTables.find(
-      (tarif) => tarif.group === "ALLE" || tarif.group.includes(tarifGroup)
-    );
-    if (!tarifTable)
-      throw new Error(
-        `Tarif not found for cantonId: ${cantonId}, tarifType: ${taxType}, tarifGroup: ${tarifGroup}`
+    for (const group of tarifGroup) {
+      const tarifTable = tarifTables.find(
+        (tarif) => tarif.group === "ALLE" || tarif.group.includes(group)
       );
-    return tarifTable;
+      if (tarifTable)
+        return [tarifTable, group];
+    }
+    throw new Error(
+      `Tarif not found for cantonId: ${cantonId}, tarifType: ${taxType}, tarifGroup: ${tarifGroup}`
+    );
   };
   var getTaxTarifGroup = (relationship, children) => {
-    if (["m", "rp"].includes(relationship))
-      return "VERHEIRATET";
-    if (children > 0)
-      return "LEDIG_MIT_KINDER";
-    if (relationship === "s")
-      return "LEDIG_ALLEINE";
-    if (relationship === "c")
-      return "LEDIG_KONKUBINAT";
-    throw new Error("Invalid relationship");
+    const tarifGroupWithFallback = [];
+    if (["m", "rp"].includes(relationship)) {
+      tarifGroupWithFallback.push("VERHEIRATET");
+    } else {
+      if (children > 0)
+        tarifGroupWithFallback.push("LEDIG_MIT_KINDER");
+      if (relationship === "s")
+        tarifGroupWithFallback.push("LEDIG_ALLEINE");
+      else if (relationship === "c")
+        tarifGroupWithFallback.push("LEDIG_KONKUBINAT");
+    }
+    if (tarifGroupWithFallback.length === 0) {
+      throw new Error("No tarif group found");
+    }
+    return tarifGroupWithFallback;
   };
   var isGroupEligableForSplitting = (group) => {
     if (["VERHEIRATET", "LEDIG_MIT_KINDER"].includes(group))
@@ -2290,13 +2298,18 @@
     return multiplyDineroPercent(amount, tarif.table[0].percent, 5);
   };
   var calculateTaxesForTarif = async (cantonId, year, tarifGroup, tarifType, taxableIncome) => {
-    const tarifIncome = await getTaxTarifTable(cantonId, year, tarifType, tarifGroup);
-    if (tarifIncome.splitting > 0 && isGroupEligableForSplitting(tarifGroup)) {
+    const [tarifIncome, tarifGroupUsed] = await getTaxTarifTable(
+      cantonId,
+      year,
+      tarifType,
+      tarifGroup
+    );
+    if (tarifIncome.splitting > 0 && isGroupEligableForSplitting(tarifGroupUsed)) {
       taxableIncome = multiplyDineroFactor(taxableIncome, 1 / tarifIncome.splitting, 5);
     }
     const taxableIncomeRounded = dineroRound100Down(taxableIncome);
     const taxes = calculateTaxesAmount(taxableIncomeRounded, tarifIncome);
-    if (tarifIncome.splitting > 0 && isGroupEligableForSplitting(tarifGroup)) {
+    if (tarifIncome.splitting > 0 && isGroupEligableForSplitting(tarifGroupUsed)) {
       return multiplyDineroFactor(taxes, tarifIncome.splitting, 5);
     }
     return taxes;
