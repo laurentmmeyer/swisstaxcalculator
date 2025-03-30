@@ -2622,8 +2622,8 @@
     const locations = JSON.parse(fileContents);
     const locationsByCity = /* @__PURE__ */ new Map();
     locationsByYearAndCity.set(year, locationsByCity);
-    locations.forEach((location) => {
-      locationsByCity.set(location.BfsID, location);
+    locations.forEach((location2) => {
+      locationsByCity.set(location2.BfsID, location2);
     });
     locationsByYear.set(year, locations);
   };
@@ -2636,12 +2636,12 @@
     const locations = locationsByYear.get(year);
     if (locations) {
       const matchingBfsIds = [];
-      for (const location of locations) {
-        const matchingZipCode = location.ZipCodes?.find(
+      for (const location2 of locations) {
+        const matchingZipCode = location2.ZipCodes?.find(
           (zipCode) => zipCode.postalCode === postalCode
         );
         if (matchingZipCode) {
-          matchingBfsIds.push(location.BfsID);
+          matchingBfsIds.push(location2.BfsID);
         }
       }
       return matchingBfsIds.length > 0 ? matchingBfsIds : null;
@@ -2672,7 +2672,7 @@
     return `${formatter.format(amount)} CHF`;
   }
   console.log("SwissTaxCalculator", "module loaded");
-  (async () => {
+  var calculateTaxesOnPage = async () => {
     console.log("SwissTaxCalculator", "init");
     await new Promise((resolve) => setTimeout(resolve, 3e3));
     console.log("SwissTaxCalculator", "will start");
@@ -2697,17 +2697,41 @@
         console.warn("Price element not found.");
         return;
       }
-      const resultElement = document.createElement("div");
-      resultElement.textContent = `Taxes per year: ${formatCHF(calculationResult.new)} (diff: ${formatCHF(calculationResult.new - calculationResult.old)} - per month (${formatCHF((calculationResult.new - calculationResult.old) / 12)}))`;
-      resultElement.style.marginTop = "10px";
-      resultElement.style.fontWeight = "bold";
-      console.log("SwissTaxCalculator", "before injection");
-      priceElement.insertAdjacentElement("afterend", resultElement);
-      console.log("SwissTaxCalculator", "after injection");
+      const diff = calculationResult.new - calculationResult.old;
+      const monthlyDiff = diff / 12;
+      const niceRed = "#d9534f";
+      const niceGreen = "#5cb85c";
+      const diffColor = diff > 0 ? niceRed : diff < 0 ? niceGreen : "inherit";
+      const formattedDiff = `${diff > 0 ? "+" : ""}${formatCHF(diff)}`;
+      const formattedMonthlyDiff = `${monthlyDiff > 0 ? "+" : ""}${formatCHF(monthlyDiff)}`;
+      const resultHTML = `
+      <div>
+        Taxes per year: <span style="font-size: 1.2em;">${formatCHF(calculationResult.new)}</span>
+      </div>
+      <div>
+        Diff: <span style="color: ${diffColor};">${formattedDiff}</span>
+        &mdash; per month: <span style="color: ${diffColor};">${formattedMonthlyDiff}</span>
+      </div>
+    `;
+      let resultElement = document.getElementById("swiss-tax-calculator-result");
+      if (resultElement) {
+        resultElement.innerHTML = resultHTML;
+      } else {
+        resultElement = document.createElement("div");
+        resultElement.id = "swiss-tax-calculator-result";
+        resultElement.style.marginTop = "5px";
+        resultElement.style.fontWeight = "bold";
+        resultElement.className = "formatted-value__value";
+        resultElement.style.fontFamily = "Arial, sans-serif";
+        resultElement.style.fontSize = "0.8em";
+        resultElement.innerHTML = resultHTML;
+        priceElement.insertAdjacentElement("afterend", resultElement);
+      }
+      console.log("SwissTaxCalculator", "injection complete");
     } catch (error) {
       console.error("Error in content script:", error);
     }
-  })();
+  };
   async function calculateTaxesAsync(postalCode) {
     console.log("SwissTaxCalculator", "calculate", postalCode);
     const bfsIds = await getBfsIdsForPostalCode(postalCode, 2025);
@@ -2727,7 +2751,7 @@
             fortune: 25e4,
             locationId: bfsId,
             relationship: "s",
-            year: 2022,
+            year: 2025,
             persons: [
               {
                 age: 30,
@@ -2746,4 +2770,14 @@
     const newTaxes = await calculateTaxes({ ...taxInput, locationId: bfsId, cantonId });
     return { new: newTaxes.taxesTotal, old: oldTaxes.taxesTotal };
   }
+  var lastUrl = location.href;
+  setInterval(() => {
+    const currentUrl = location.href;
+    if (currentUrl !== lastUrl) {
+      lastUrl = currentUrl;
+      console.log("SwissTaxCalculator", currentUrl);
+      calculateTaxesOnPage();
+    }
+  }, 500);
+  calculateTaxesOnPage();
 })();
