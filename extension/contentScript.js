@@ -29,7 +29,7 @@ console.log("SwissTaxCalculator", "module loaded");
       const placeText = placeElement.textContent || '';
 
       // Find a 4-digit postal code after a comma (e.g. ", 1234")
-      const postalCodeMatch = placeText.match(/,\s*(\d{4})/);
+      const postalCodeMatch = placeText.match(/,*\s*(\d{4})/);
       if (!postalCodeMatch) {
         console.warn('Postal code not found in the place element.');
         return;
@@ -50,7 +50,7 @@ console.log("SwissTaxCalculator", "module loaded");
 
       // Create a new element to display the result
       const resultElement = document.createElement('div');
-      resultElement.textContent = `Taxes per year: ${formatCHF(calculationResult)}`;
+      resultElement.textContent = `Taxes per year: ${formatCHF(calculationResult.new)} (diff: ${formatCHF(calculationResult.new-calculationResult.old)} - per month (${formatCHF((calculationResult.new-calculationResult.old)/12)}))`;
       resultElement.style.marginTop = '10px';
       resultElement.style.fontWeight = 'bold';
       console.log("SwissTaxCalculator", "before injection");
@@ -106,8 +106,8 @@ async function calculateTaxesAsync(postalCode) {
 
     });
 
+  const oldTaxes = await calculateTaxes(taxInput);
+  const newTaxes = await calculateTaxes({ ...taxInput, locationId: bfsId, cantonId });
 
-  const taxes = await calculateTaxes({ ...taxInput, locationId: bfsId, cantonId });
-
-  return taxes.taxesTotal;
+  return {new: newTaxes.taxesTotal, old: oldTaxes.taxesTotal};
 }

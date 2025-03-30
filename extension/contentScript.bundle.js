@@ -2683,7 +2683,7 @@
         return;
       }
       const placeText = placeElement.textContent || "";
-      const postalCodeMatch = placeText.match(/,\s*(\d{4})/);
+      const postalCodeMatch = placeText.match(/,*\s*(\d{4})/);
       if (!postalCodeMatch) {
         console.warn("Postal code not found in the place element.");
         return;
@@ -2698,7 +2698,7 @@
         return;
       }
       const resultElement = document.createElement("div");
-      resultElement.textContent = `Taxes per year: ${formatCHF(calculationResult)}`;
+      resultElement.textContent = `Taxes per year: ${formatCHF(calculationResult.new)} (diff: ${formatCHF(calculationResult.new - calculationResult.old)} - per month (${formatCHF((calculationResult.new - calculationResult.old) / 12)}))`;
       resultElement.style.marginTop = "10px";
       resultElement.style.fontWeight = "bold";
       console.log("SwissTaxCalculator", "before injection");
@@ -2742,7 +2742,8 @@
         }
       });
     });
-    const taxes = await calculateTaxes({ ...taxInput, locationId: bfsId, cantonId });
-    return taxes.taxesTotal;
+    const oldTaxes = await calculateTaxes(taxInput);
+    const newTaxes = await calculateTaxes({ ...taxInput, locationId: bfsId, cantonId });
+    return { new: newTaxes.taxesTotal, old: oldTaxes.taxesTotal };
   }
 })();
