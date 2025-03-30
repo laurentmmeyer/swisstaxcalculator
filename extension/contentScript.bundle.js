@@ -2766,7 +2766,7 @@
         return;
       }
       const placeText = placeElement.textContent || "";
-      const match = placeText.match(/,\s*(\d{4})\s+(.+)/);
+      const match = placeText.match(/,*\s*(\d{4})\s+(.+)/);
       if (!match) {
         console.warn("Postal code or city not found in the place element.");
         return;
@@ -2794,7 +2794,7 @@
         Taxes per year: <span style="font-size: 1.2em;">${formatCHF(calculationResult.new)}</span>
       </div>
       <div>
-        Diff: <span style="color: ${diffColor};">${formattedDiff}</span>
+        Difference with your current taxes: per year: <span style="color: ${diffColor};">${formattedDiff}</span>
         &mdash; per month: <span style="color: ${diffColor};">${formattedMonthlyDiff}</span>
       </div>
     `;

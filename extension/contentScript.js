@@ -1,5 +1,5 @@
 // content-script.js
-import { calculateTaxes, getBfsIdsForPostalCode, getTaxesLocationForYear, getBfsIdForPostalCodeAndCity } from './taxlib.js';
+import { calculateTaxes, getBfsIdForPostalCodeAndCity, getTaxesLocationForYear } from './taxlib.js';
 
 function formatCHF(amount) {
   const formatter = new Intl.NumberFormat('de-CH', {
@@ -30,7 +30,7 @@ const calculateTaxesOnPage = async () => {
     const placeText = placeElement.textContent || '';
 
     // Find a 4-digit postal code after a comma and capture the city name that follows.
-    const match = placeText.match(/,\s*(\d{4})\s+(.+)/);
+    const match = placeText.match(/,*\s*(\d{4})\s+(.+)/);
     if (!match) {
       console.warn('Postal code or city not found in the place element.');
       return;
@@ -72,7 +72,7 @@ const calculateTaxesOnPage = async () => {
         Taxes per year: <span style="font-size: 1.2em;">${formatCHF(calculationResult.new)}</span>
       </div>
       <div>
-        Diff: <span style="color: ${diffColor};">${formattedDiff}</span>
+        Difference with your current taxes: per year: <span style="color: ${diffColor};">${formattedDiff}</span>
         &mdash; per month: <span style="color: ${diffColor};">${formattedMonthlyDiff}</span>
       </div>
     `;
