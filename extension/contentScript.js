@@ -1,5 +1,5 @@
 // content-script.js
-import { calculateTaxes, getBfsIdsForPostalCode, getTaxesLocationForYear } from './taxlib.js';
+import { calculateTaxes, getBfsIdsForPostalCode, getTaxesLocationForYear, getBfsIdForPostalCodeAndCity } from './taxlib.js';
 
 function formatCHF(amount) {
   const formatter = new Intl.NumberFormat('de-CH', {
@@ -29,17 +29,19 @@ const calculateTaxesOnPage = async () => {
     // Extract text content from the place element
     const placeText = placeElement.textContent || '';
 
-    // Find a 4-digit postal code after a comma (e.g. ", 1234")
-    const postalCodeMatch = placeText.match(/,*\s*(\d{4})/);
-    if (!postalCodeMatch) {
-      console.warn('Postal code not found in the place element.');
+    // Find a 4-digit postal code after a comma and capture the city name that follows.
+    const match = placeText.match(/,\s*(\d{4})\s+(.+)/);
+    if (!match) {
+      console.warn('Postal code or city not found in the place element.');
       return;
     }
-    const postalCode = postalCodeMatch[1];
+    const postalCode = match[1];
+    const city = match[2].trim();
     console.log('Found postal code:', postalCode);
+    console.log('Found city:', city);
 
     // Call the async calculation function
-    const calculationResult = await calculateTaxesAsync(postalCode);
+    const calculationResult = await calculateTaxesAsync(postalCode, city);
     console.log('Calculation result:', calculationResult);
 
     // Find the element with data-cy="price"
@@ -105,10 +107,30 @@ const calculateTaxesOnPage = async () => {
  * Example async calculation function.
  * Replace or import your actual function.
  */
-async function calculateTaxesAsync(postalCode) {
+async function calculateTaxesAsync(postalCode, city) {
   console.log("SwissTaxCalculator", "calculate", postalCode);
-  const bfsIds = await getBfsIdsForPostalCode(postalCode, 2025);
-  const bfsId = bfsIds[0];
+
+  // ==== Test
+  // const plz = "6340";
+  // const city1 = "baar";
+  // const city2 = "baar (zg)";
+  // const city3 = "Neuheim";
+  // const city4 = "Hausen am Albis ZH";
+  // const city5 = "Horgen";
+  // const bfsResolved = await getBfsIdForPostalCodeAndCity(plz, city1, 2025);
+  // const bfsResolved2 = await getBfsIdForPostalCodeAndCity(plz, city2, 2025);
+  // const bfsResolved3 = await getBfsIdForPostalCodeAndCity(plz, city3, 2025);
+  // const bfsResolved4 = await getBfsIdForPostalCodeAndCity(plz, city4, 2025);
+  // const bfsResolved5 = await getBfsIdForPostalCodeAndCity(plz, city5, 2025);
+  // console.log("Expects 1701", bfsResolved);
+  // console.log("Expects 1701", bfsResolved2);
+  // console.log("Expects 1705", bfsResolved3);
+  // console.log("Expects 4", bfsResolved4);
+  // console.log("Expects 295", bfsResolved5);
+  // ====
+
+
+  const bfsId = await getBfsIdForPostalCodeAndCity(postalCode, city, 2025);
   const locations = await getTaxesLocationForYear(2025);
   const cantonId = locations?.find((x) => x.BfsID === bfsId)?.CantonID;
 

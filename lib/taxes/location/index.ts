@@ -1,3 +1,4 @@
+import { stringSimilarity } from "string-similarity-js";
 import { readFile } from '~~/lib/utils/filemocker';
 import { dataParsedBasePath } from '../constants';
 import { TaxLocation } from '../typesClient';
@@ -75,3 +76,38 @@ export const bfsIdsForPostalCode = async (postalCode: string, year: number): Pro
 
   return null;
 };
+
+export async function bfsIdForPostalCodeAndCity(
+  postalCode: string,
+  city: string,
+  year: number
+): Promise<number | null> {
+  // Ensure the locations for the specified year are loaded.
+  await loadLocationsIfRequired(year);
+  const locations = locationsByYear.get(year);
+  if (!locations) {
+    return null;
+  }
+
+  let bestSimilarity = 0;
+  let bestBfsId: number | null = null;
+
+  // Iterate over each location
+  for (const location of locations) {
+    // Check if any zip code in the location matches the given postal code.
+    const matchingZip = location.ZipCodes?.find(z => z.postalCode === postalCode);
+    if (matchingZip) {
+      // Use the city from the matching zip entry for similarity comparison.
+      const similarity = stringSimilarity(
+        city.toLowerCase(),
+        matchingZip.city.toLowerCase()
+      );
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestBfsId = location.BfsID;
+      }
+    }
+  }
+
+  return bestBfsId;
+}

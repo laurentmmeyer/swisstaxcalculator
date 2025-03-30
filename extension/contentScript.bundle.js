@@ -31,6 +31,193 @@
   ));
 
   // extension/taxlib.js
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __commonJS = (cb, mod) => function __require2() {
+    return mod || (0, cb[__getOwnPropNames2(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __copyProps2 = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc2(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps2(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
+  var require_string_similarity = __commonJS({
+    "node_modules/string-similarity-js/dist/string-similarity.js"(exports) {
+      "use strict";
+      Object.defineProperty(exports, "__esModule", { value: true });
+      exports.stringSimilarity = void 0;
+      var stringSimilarity2 = function(str1, str2, substringLength, caseSensitive) {
+        if (substringLength === void 0) {
+          substringLength = 2;
+        }
+        if (caseSensitive === void 0) {
+          caseSensitive = false;
+        }
+        if (!caseSensitive) {
+          str1 = str1.toLowerCase();
+          str2 = str2.toLowerCase();
+        }
+        if (str1.length < substringLength || str2.length < substringLength)
+          return 0;
+        var map = /* @__PURE__ */ new Map();
+        for (var i = 0; i < str1.length - (substringLength - 1); i++) {
+          var substr1 = str1.substr(i, substringLength);
+          map.set(substr1, map.has(substr1) ? map.get(substr1) + 1 : 1);
+        }
+        var match = 0;
+        for (var j = 0; j < str2.length - (substringLength - 1); j++) {
+          var substr2 = str2.substr(j, substringLength);
+          var count = map.has(substr2) ? map.get(substr2) : 0;
+          if (count > 0) {
+            map.set(substr2, count - 1);
+            match++;
+          }
+        }
+        return match * 2 / (str1.length + str2.length - (substringLength - 1) * 2);
+      };
+      exports.stringSimilarity = stringSimilarity2;
+      exports.default = exports.stringSimilarity;
+    }
+  });
+  var import_string_similarity_js = __toESM2(require_string_similarity());
+  var readFile = async (filePath) => {
+    if (typeof window === "undefined") {
+      const { readFile: readFile2 } = await import("fs/promises");
+      return readFile2(filePath, "utf-8");
+    }
+    if (chrome.runtime) {
+      const inExtensionFilePath = chrome.runtime.getURL("/options/" + filePath.replace("./", ""));
+      const response = await fetch(inExtensionFilePath);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file at ${filePath}`);
+      }
+      return response.text();
+    } else {
+      const response = await fetch(filePath);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file at ${filePath}`);
+      }
+      return response.text();
+    }
+  };
+  var maxSalaryNbuAlv = 148200;
+  var taxDeductionsPerson = {
+    insurancePremiums: {
+      label: { de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien" },
+      hint: {
+        de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien, abz\xFCglich individuelle Pr\xE4mienverbilligung. Annahme: 4'560 CHF pro Erwachsenen (380 CHF monatlich)"
+      },
+      default: 4560
+    },
+    pillar3a: {
+      label: { de: "Beitr\xE4ge an S\xE4ule 3a" }
+    },
+    mealCosts: {
+      label: { de: "Verpflegungskosten" },
+      default: 1600,
+      suggestion: 3200,
+      dependsOnWorkloadFactor: true
+    },
+    travelExpenses: {
+      label: { de: "Fahrkosten" },
+      default: 1e3
+    },
+    otherProfessionalExpenses: {
+      label: { de: "Berufsauslagen" },
+      defaultFlatRate: true
+    },
+    professionalExpensesSideline: {
+      label: { de: "Berufsauslagen Nebenerwerb" }
+    },
+    otherDeductions: {
+      label: { de: "\xDCbrige Abz\xFCge" }
+    }
+  };
+  var taxDeductionsGeneral = {
+    insurancePremiumsKids: {
+      label: { de: "Versicherungspr\xE4mien Kinder" },
+      withChildrenOnly: true,
+      defaultPerChild: 1200
+    },
+    childcareCosts: {
+      label: { de: "Kinder Drittbetreuungskosten" },
+      withChildrenOnly: true
+    },
+    // rentExpenses: {
+    //   label: { de: 'Mietausgaben' },
+    //   hint: {
+    //     de: 'Nur relevant für die Kantone ZG und VD.'
+    //   }
+    // },
+    debtInterest: {
+      label: { de: "Schuldzinsen" }
+    },
+    maintenanceCostsRealEstate: {
+      label: { de: "Unterhaltskosten f\xFCr Liegenschaften" }
+    },
+    otherDeductions: {
+      label: { de: "\xDCbrige Abz\xFCge" }
+    }
+  };
+  var dataParsedRelativePath = "data/parsed/";
+  var dataParsedBasePath = `./${dataParsedRelativePath}`;
+  var locationsByYearAndCity = /* @__PURE__ */ new Map();
+  var locationsByYear = /* @__PURE__ */ new Map();
+  var loadLocationsIfRequired = async (year) => {
+    if (locationsByYearAndCity.has(year))
+      return;
+    const filePath = `${dataParsedBasePath}${year}/locations.json`;
+    const fileContents = await readFile(filePath);
+    const locations = JSON.parse(fileContents);
+    const locationsByCity = /* @__PURE__ */ new Map();
+    locationsByYearAndCity.set(year, locationsByCity);
+    locations.forEach((location2) => {
+      locationsByCity.set(location2.BfsID, location2);
+    });
+    locationsByYear.set(year, locations);
+  };
+  var getTaxLocations = async (year) => {
+    await loadLocationsIfRequired(year);
+    return locationsByYear.get(year);
+  };
+  async function bfsIdForPostalCodeAndCity(postalCode, city, year) {
+    await loadLocationsIfRequired(year);
+    const locations = locationsByYear.get(year);
+    if (!locations) {
+      return null;
+    }
+    let bestSimilarity = 0;
+    let bestBfsId = null;
+    for (const location2 of locations) {
+      const matchingZip = location2.ZipCodes?.find((z) => z.postalCode === postalCode);
+      if (matchingZip) {
+        const similarity = (0, import_string_similarity_js.stringSimilarity)(
+          city.toLowerCase(),
+          matchingZip.city.toLowerCase()
+        );
+        if (similarity > bestSimilarity) {
+          bestSimilarity = similarity;
+          bestBfsId = location2.BfsID;
+        }
+      }
+    }
+    return bestBfsId;
+  }
   var INVALID_AMOUNT_MESSAGE = "Amount is invalid.";
   var INVALID_SCALE_MESSAGE = "Scale is invalid.";
   var UNEQUAL_CURRENCIES_MESSAGE = "Objects must have the same currency.";
@@ -1445,65 +1632,6 @@
     });
     return sortedArray;
   };
-  var maxSalaryNbuAlv = 148200;
-  var taxDeductionsPerson = {
-    insurancePremiums: {
-      label: { de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien" },
-      hint: {
-        de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien, abz\xFCglich individuelle Pr\xE4mienverbilligung. Annahme: 4'560 CHF pro Erwachsenen (380 CHF monatlich)"
-      },
-      default: 4560
-    },
-    pillar3a: {
-      label: { de: "Beitr\xE4ge an S\xE4ule 3a" }
-    },
-    mealCosts: {
-      label: { de: "Verpflegungskosten" },
-      default: 1600,
-      suggestion: 3200,
-      dependsOnWorkloadFactor: true
-    },
-    travelExpenses: {
-      label: { de: "Fahrkosten" },
-      default: 1e3
-    },
-    otherProfessionalExpenses: {
-      label: { de: "Berufsauslagen" },
-      defaultFlatRate: true
-    },
-    professionalExpensesSideline: {
-      label: { de: "Berufsauslagen Nebenerwerb" }
-    },
-    otherDeductions: {
-      label: { de: "\xDCbrige Abz\xFCge" }
-    }
-  };
-  var taxDeductionsGeneral = {
-    insurancePremiumsKids: {
-      label: { de: "Versicherungspr\xE4mien Kinder" },
-      withChildrenOnly: true,
-      defaultPerChild: 1200
-    },
-    childcareCosts: {
-      label: { de: "Kinder Drittbetreuungskosten" },
-      withChildrenOnly: true
-    },
-    // rentExpenses: {
-    //   label: { de: 'Mietausgaben' },
-    //   hint: {
-    //     de: 'Nur relevant für die Kantone ZG und VD.'
-    //   }
-    // },
-    debtInterest: {
-      label: { de: "Schuldzinsen" }
-    },
-    maintenanceCostsRealEstate: {
-      label: { de: "Unterhaltskosten f\xFCr Liegenschaften" }
-    },
-    otherDeductions: {
-      label: { de: "\xDCbrige Abz\xFCge" }
-    }
-  };
   var taxDeductionDefinitions = [
     {
       id: "HauptErw_EK",
@@ -1786,28 +1914,6 @@
         return dineroChf(0);
     }
   };
-  var readFile = async (filePath) => {
-    if (typeof window === "undefined") {
-      const { readFile: readFile2 } = await import("fs/promises");
-      return readFile2(filePath, "utf-8");
-    }
-    if (chrome.runtime) {
-      const inExtensionFilePath = chrome.runtime.getURL("/options/" + filePath.replace("./", ""));
-      const response = await fetch(inExtensionFilePath);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file at ${filePath}`);
-      }
-      return response.text();
-    } else {
-      const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file at ${filePath}`);
-      }
-      return response.text();
-    }
-  };
-  var dataParsedRelativePath = "data/parsed/";
-  var dataParsedBasePath = `./${dataParsedRelativePath}`;
   var taxDeductionsByYearAndCanton = /* @__PURE__ */ new Map();
   var loadDeductionsIfRequired = async (cantonId, year) => {
     if (taxDeductionsByYearAndCanton.get(year)?.has(cantonId))
@@ -2612,42 +2718,6 @@
     const taxes = await calculateTaxesForTarif(cantonId, year, tarifGroup, "VORSORGESTEUER", capital);
     return taxes;
   };
-  var locationsByYearAndCity = /* @__PURE__ */ new Map();
-  var locationsByYear = /* @__PURE__ */ new Map();
-  var loadLocationsIfRequired = async (year) => {
-    if (locationsByYearAndCity.has(year))
-      return;
-    const filePath = `${dataParsedBasePath}${year}/locations.json`;
-    const fileContents = await readFile(filePath);
-    const locations = JSON.parse(fileContents);
-    const locationsByCity = /* @__PURE__ */ new Map();
-    locationsByYearAndCity.set(year, locationsByCity);
-    locations.forEach((location2) => {
-      locationsByCity.set(location2.BfsID, location2);
-    });
-    locationsByYear.set(year, locations);
-  };
-  var getTaxLocations = async (year) => {
-    await loadLocationsIfRequired(year);
-    return locationsByYear.get(year);
-  };
-  var bfsIdsForPostalCode = async (postalCode, year) => {
-    await loadLocationsIfRequired(year);
-    const locations = locationsByYear.get(year);
-    if (locations) {
-      const matchingBfsIds = [];
-      for (const location2 of locations) {
-        const matchingZipCode = location2.ZipCodes?.find(
-          (zipCode) => zipCode.postalCode === postalCode
-        );
-        if (matchingZipCode) {
-          matchingBfsIds.push(location2.BfsID);
-        }
-      }
-      return matchingBfsIds.length > 0 ? matchingBfsIds : null;
-    }
-    return null;
-  };
   var calculateTaxes = async (taxInput) => {
     switch (taxInput.calculationType) {
       case "incomeAndWealth":
@@ -2657,8 +2727,8 @@
     }
     throw new Error("Tax type not supported");
   };
-  var getBfsIdsForPostalCode = async (postalCode, year) => {
-    return await bfsIdsForPostalCode(postalCode, year);
+  var getBfsIdForPostalCodeAndCity = async (postalCode, city, year) => {
+    return await bfsIdForPostalCodeAndCity(postalCode, city, year);
   };
   var getTaxesLocationForYear = getTaxLocations;
 
@@ -2683,14 +2753,16 @@
         return;
       }
       const placeText = placeElement.textContent || "";
-      const postalCodeMatch = placeText.match(/,*\s*(\d{4})/);
-      if (!postalCodeMatch) {
-        console.warn("Postal code not found in the place element.");
+      const match = placeText.match(/,\s*(\d{4})\s+(.+)/);
+      if (!match) {
+        console.warn("Postal code or city not found in the place element.");
         return;
       }
-      const postalCode = postalCodeMatch[1];
+      const postalCode = match[1];
+      const city = match[2].trim();
       console.log("Found postal code:", postalCode);
-      const calculationResult = await calculateTaxesAsync(postalCode);
+      console.log("Found city:", city);
+      const calculationResult = await calculateTaxesAsync(postalCode, city);
       console.log("Calculation result:", calculationResult);
       const priceElement = document.querySelector('[data-cy="price"]');
       if (!priceElement) {
@@ -2732,10 +2804,9 @@
       console.error("Error in content script:", error);
     }
   };
-  async function calculateTaxesAsync(postalCode) {
+  async function calculateTaxesAsync(postalCode, city) {
     console.log("SwissTaxCalculator", "calculate", postalCode);
-    const bfsIds = await getBfsIdsForPostalCode(postalCode, 2025);
-    const bfsId = bfsIds[0];
+    const bfsId = await getBfsIdForPostalCodeAndCity(postalCode, city, 2025);
     const locations = await getTaxesLocationForYear(2025);
     const cantonId = locations?.find((x) => x.BfsID === bfsId)?.CantonID;
     const taxInput = await new Promise((resolve, reject) => {
