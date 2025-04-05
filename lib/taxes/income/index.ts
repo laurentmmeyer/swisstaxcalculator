@@ -169,7 +169,8 @@ const calculateTaxableAmount = async (taxInput: TaxInput) => {
         amountCanton: dineroToNumber(item.amountCanton),
         amountBund: dineroToNumber(item.amountBund),
         name: item.name,
-        target: item.target
+        target: item.target,
+        label: item.label
       })
     ),
     deductionsFortune: deductionsFortune.map(
@@ -178,7 +179,8 @@ const calculateTaxableAmount = async (taxInput: TaxInput) => {
         amountCanton: dineroToNumber(item.amountCanton),
         amountBund: dineroToNumber(item.amountBund),
         name: item.name,
-        target: item.target
+        target: item.target,
+        label: item.label
       })
     ),
     taxableFortuneCanton,

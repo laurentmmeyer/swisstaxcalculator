@@ -6,7 +6,7 @@
           <FormKit
             :id="deduction"
             :name="deduction"
-            :label="props.deductions[deduction].label.de"
+            :label="props.deductions[deduction].label[locale as 'fr'|'de'|'en'|'it']"
             wrapper-class="flex items-center"
             label-class="flex-1 mr-4"
             inner-class="flex-1"
@@ -24,9 +24,16 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { TaxDeductionFieldConfigs } from '~/lib/taxes/typesClient';
 
 const props = defineProps<{ deductions: TaxDeductionFieldConfigs; childrenCount?: number }>();
+
+const locale = ref(
+  ["de", "fr", "it"].includes(navigator.language.slice(0, 2))
+    ? navigator.language.slice(0, 2)
+    : "en"
+);
 
 const deductionKeys = computed(() =>
   Object.keys(props.deductions).filter(

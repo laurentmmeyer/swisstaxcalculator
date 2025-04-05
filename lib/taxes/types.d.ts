@@ -10,6 +10,7 @@ export type TaxType =
 export interface TaxDeductionResultItem {
   id: string;
   name: string;
+  label: {en:string, de: string, fr: string, it: string};
   target: string;
   amountCanton: DineroChf;
   amountBund: DineroChf;

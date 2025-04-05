@@ -5,7 +5,7 @@ export type TaxIncomeType = 'gross' | 'net' | 'taxable'; // Brutto, Netto, Steue
 
 export interface ValueLabelItem<T extends string> {
   value: T;
-  label: { de: string };
+  label: { de: string, en: string, fr: string, it: string };
 }
 
 export type TaxCalculationTypeList = readonly ValueLabelItem<TaxCalculationType>[];
@@ -50,6 +50,7 @@ export interface TaxDeductionResultItemDisplay {
   target: string;
   amountCanton: number;
   amountBund: number;
+  label: {en:string, fr: string, de:string, it: string}
 }
 
 export interface TaxDeductionResult {
@@ -106,8 +107,8 @@ export interface TaxDeductionGeneralInput {
 }
 
 interface TaxDeductionFieldConfig {
-  label: { de: string };
-  hint?: { de: string };
+  label: { de: string, en: string, fr: string, it:string };
+  hint?: { de: string, en: string, fr: string, it:string };
   default?: number;
   suggestion?: number;
   defaultPerson?: number;

@@ -10,7 +10,8 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       routes: ['/']
-    }
+    },
+    minify: false,
   },
   typescript: {
     shim: false
@@ -27,7 +28,7 @@ export default defineNuxtConfig({
   },
   modules: ['@formkit/nuxt', 'nuxt-headlessui', 'nuxt-vitest', 'nuxt-security'],
   build: {
-    analyze: true
+    analyze: true,
   },
   app: {
     baseURL: '/options/',

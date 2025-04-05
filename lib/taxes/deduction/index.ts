@@ -307,7 +307,7 @@ export const calculateDeductionByDefinition = (
       const amountBund = deductionBund
         ? calculateDeductionByFormat(deductionBund, deductionInput.amount)
         : dineroChf(amountOverride);
-
+      debugger;
       const deduction: TaxDeductionResultItem = {
         id: deductionDefinition.id,
         name:
@@ -315,6 +315,28 @@ export const calculateDeductionByDefinition = (
           deductionCanton?.name.de ??
           deductionBund?.name.de ??
           'Unbekannter Abzug',
+        label: {
+          en:
+            deductionBund?.name.en ??
+            deductionCanton?.name.en ??
+            deductionDefinition.name ??
+            'Unknown deduction',
+          fr:
+            deductionBund?.name.fr ??
+            deductionCanton?.name.fr ??
+            deductionDefinition.name ??
+            'Déduction inconnue',
+          de:
+            deductionBund?.name.de ??
+            deductionCanton?.name.de ??
+            deductionDefinition.name ??
+            'Unbekannter Abzug',
+          it:
+            deductionCanton?.name.it ??
+            deductionBund?.name.it ??
+            deductionDefinition.name ??
+            'Deduzione sconosciuta'
+        },
         target: deductionInput.target ?? '',
         amountCanton: getAmount(amountCanton, deductionInput),
         amountBund: getAmount(amountBund, deductionInput)

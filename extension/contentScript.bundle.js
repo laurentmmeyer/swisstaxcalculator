@@ -118,60 +118,117 @@
   var maxSalaryNbuAlv = 148200;
   var taxDeductionsPerson = {
     insurancePremiums: {
-      label: { de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien" },
+      label: {
+        de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien",
+        en: "Insurance premiums and interest on savings capital",
+        fr: "Primes d'assurance et int\xE9r\xEAts sur le capital d'\xE9pargne",
+        it: "Premi assicurativi e interessi sul capitale di risparmio"
+      },
       hint: {
-        de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien, abz\xFCglich individuelle Pr\xE4mienverbilligung. Annahme: 4'560 CHF pro Erwachsenen (380 CHF monatlich)"
+        de: "Versicherungspr\xE4mien und Zinsen von Sparkapitalien, abz\xFCglich individuelle Pr\xE4mienverbilligung. Annahme: 4'560 CHF pro Erwachsenen (380 CHF monatlich)",
+        en: "Insurance premiums and interest on savings capital, minus individual premium reductions. Assumption: CHF 4,560 per adult (CHF 380 per month)",
+        fr: "Primes d'assurance et int\xE9r\xEAts sur le capital d'\xE9pargne, d\xE9duction faite des r\xE9ductions individuelles de prime. Hypoth\xE8se : 4'560 CHF par adulte (380 CHF par mois)",
+        it: "Premi assicurativi e interessi sul capitale di risparmio, al netto delle riduzioni individuali dei premi. Assunzione: CHF 4.560 per adulto (CHF 380 al mese)"
       },
       default: 4560
     },
     pillar3a: {
-      label: { de: "Beitr\xE4ge an S\xE4ule 3a" }
+      label: {
+        de: "Beitr\xE4ge an S\xE4ule 3a",
+        en: "Contributions to Pillar 3a",
+        fr: "Cotisations au pilier 3a",
+        it: "Contributi al pilastro 3a"
+      }
     },
     mealCosts: {
-      label: { de: "Verpflegungskosten" },
+      label: {
+        de: "Verpflegungskosten",
+        en: "Meal costs",
+        fr: "Frais de restauration",
+        it: "Costi alimentari"
+      },
       default: 1600,
       suggestion: 3200,
       dependsOnWorkloadFactor: true
     },
     travelExpenses: {
-      label: { de: "Fahrkosten" },
+      label: {
+        de: "Fahrkosten",
+        en: "Travel expenses",
+        fr: "Frais de d\xE9placement",
+        it: "Spese di viaggio"
+      },
       default: 1e3
     },
     otherProfessionalExpenses: {
-      label: { de: "Berufsauslagen" },
+      label: {
+        de: "Berufsauslagen",
+        en: "Professional expenses",
+        fr: "Frais professionnels",
+        it: "Spese professionali"
+      },
       defaultFlatRate: true
     },
     professionalExpensesSideline: {
-      label: { de: "Berufsauslagen Nebenerwerb" }
+      label: {
+        de: "Berufsauslagen Nebenerwerb",
+        en: "Side job professional expenses",
+        fr: "Frais professionnels secondaires",
+        it: "Spese professionali per attivit\xE0 secondaria"
+      }
     },
     otherDeductions: {
-      label: { de: "\xDCbrige Abz\xFCge" }
+      label: {
+        de: "\xDCbrige Abz\xFCge",
+        en: "Other deductions",
+        fr: "Autres d\xE9ductions",
+        it: "Altre detrazioni"
+      }
     }
   };
   var taxDeductionsGeneral = {
     insurancePremiumsKids: {
-      label: { de: "Versicherungspr\xE4mien Kinder" },
+      label: {
+        de: "Versicherungspr\xE4mien Kinder",
+        en: "Insurance premiums for children",
+        fr: "Primes d'assurance pour enfants",
+        it: "Premi assicurativi per bambini"
+      },
       withChildrenOnly: true,
       defaultPerChild: 1200
     },
     childcareCosts: {
-      label: { de: "Kinder Drittbetreuungskosten" },
+      label: {
+        de: "Kinder Drittbetreuungskosten",
+        en: "Childcare costs (external)",
+        fr: "Frais de garde d'enfants",
+        it: "Costi di assistenza per bambini"
+      },
       withChildrenOnly: true
     },
-    // rentExpenses: {
-    //   label: { de: 'Mietausgaben' },
-    //   hint: {
-    //     de: 'Nur relevant für die Kantone ZG und VD.'
-    //   }
-    // },
     debtInterest: {
-      label: { de: "Schuldzinsen" }
+      label: {
+        de: "Schuldzinsen",
+        en: "Interest on debts",
+        fr: "Int\xE9r\xEAts sur les dettes",
+        it: "Interessi sui debiti"
+      }
     },
     maintenanceCostsRealEstate: {
-      label: { de: "Unterhaltskosten f\xFCr Liegenschaften" }
+      label: {
+        de: "Unterhaltskosten f\xFCr Liegenschaften",
+        en: "Maintenance costs for properties",
+        fr: "Co\xFBts d\u2019entretien des biens immobiliers",
+        it: "Costi di manutenzione degli immobili"
+      }
     },
     otherDeductions: {
-      label: { de: "\xDCbrige Abz\xFCge" }
+      label: {
+        de: "\xDCbrige Abz\xFCge",
+        en: "Other deductions",
+        fr: "Autres d\xE9ductions",
+        it: "Altre detrazioni"
+      }
     }
   };
   var dataParsedRelativePath = "data/parsed/";
@@ -1870,9 +1927,16 @@
         const amountOverride = deductionDefinition.applyAlways ? deductionInput.amount ?? 0 : 0;
         const amountCanton = deductionCanton ? calculateDeductionByFormat(deductionCanton, deductionInput.amount) : dineroChf(amountOverride);
         const amountBund = deductionBund ? calculateDeductionByFormat(deductionBund, deductionInput.amount) : dineroChf(amountOverride);
+        debugger;
         const deduction = {
           id: deductionDefinition.id,
           name: deductionDefinition.name ?? deductionCanton?.name.de ?? deductionBund?.name.de ?? "Unbekannter Abzug",
+          label: {
+            en: deductionBund?.name.en ?? deductionCanton?.name.en ?? deductionDefinition.name ?? "Unknown deduction",
+            fr: deductionBund?.name.fr ?? deductionCanton?.name.fr ?? deductionDefinition.name ?? "D\xE9duction inconnue",
+            de: deductionBund?.name.de ?? deductionCanton?.name.de ?? deductionDefinition.name ?? "Unbekannter Abzug",
+            it: deductionCanton?.name.it ?? deductionBund?.name.it ?? deductionDefinition.name ?? "Deduzione sconosciuta"
+          },
           target: deductionInput.target ?? "",
           amountCanton: getAmount(amountCanton, deductionInput),
           amountBund: getAmount(amountBund, deductionInput)
@@ -2446,7 +2510,8 @@
           amountCanton: dineroToNumber(item.amountCanton),
           amountBund: dineroToNumber(item.amountBund),
           name: item.name,
-          target: item.target
+          target: item.target,
+          label: item.label
         })
       ),
       deductionsFortune: deductionsFortune.map(
