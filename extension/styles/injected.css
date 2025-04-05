@@ -1,0 +1,44 @@
+.swisstaxcalculator_md-card {
+  margin: 4px 0;
+  padding: 12px;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 0.8em;
+}
+
+.swisstaxcalculator_md-title {
+  font-size: 1em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.swisstaxcalculator_md-value {
+  font-weight: bold;
+}
+
+.swisstaxcalculator_md-subtitle {
+  font-size: 0.8em;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.swisstaxcalculator_md-actions {
+  margin-top: 8px;
+}
+
+.swisstaxcalculator_md-button {
+  background-color: #607d8b; /* blue-grey */
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 2px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.swisstaxcalculator_md-button:hover {
+  background-color: #455a64; /* darker blue-grey */
+}

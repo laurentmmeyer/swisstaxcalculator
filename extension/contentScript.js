@@ -257,14 +257,14 @@ async function calculateTaxesAsync(postalCode, city) {
 }
 
 /**
- * Displays the calculated tax results on the page.
- * @param {Element} anchorElement - The element to insert results relative to (e.g., price element).
+ * Displays the calculated tax results in a Material Design–inspired card.
+ * @param {Element} anchorElement - The element to insert results relative to.
  * @param {{new: number, old: number}} calculationResult - The calculated tax amounts.
  * @param {object} config - The site-specific configuration object.
  */
 function displayTaxResults(anchorElement, calculationResult, config) {
   if (!anchorElement || !calculationResult || !config) {
-    console.warn("SwissTaxCalculator: Cannot display results - missing element, data, or config.");
+    console.warn("SwissTaxCalculator: Missing element, data, or config.");
     return;
   }
 
@@ -272,77 +272,76 @@ function displayTaxResults(anchorElement, calculationResult, config) {
   const diff = newTax - oldTax;
   const monthlyDiff = diff / 12;
 
-  // Define pleasant colors
-  const niceRed = "#d9534f";   // for increased taxes
-  const niceGreen = "#5cb85c"; // for reduced taxes
-  const neutralColor = "#555"; // for no change or if old tax was unknown
-
-  // Determine color based on the difference
-  let diffColor = neutralColor;
-  if (oldTax > 0) { // Only show color difference if old tax was known
-    diffColor = diff > 0 ? niceRed : diff < 0 ? niceGreen : neutralColor;
-  }
+  const COLORS = {
+    red: "#d9534f",
+    green: "#5cb85c",
+    neutral: "#555"
+  };
+  const diffColor = oldTax > 0
+    ? (diff > 0 ? COLORS.red : diff < 0 ? COLORS.green : COLORS.neutral)
+    : COLORS.neutral;
 
   const formattedNewTax = formatCHF(newTax);
   const formattedDiff = `${diff > 0 ? '+' : ''}${formatCHF(diff)}`;
-  const formattedMonthlyDiff = `${monthlyDiff > 0 ? '+' : ''}${formatCHF(Math.round(monthlyDiff))}`; // Round monthly diff
+  const formattedMonthlyDiff = `${monthlyDiff > 0 ? '+' : ''}${formatCHF(Math.round(monthlyDiff))}`;
 
-  // Build the inner HTML for the result element
-  // Added a check to show difference only if oldTax was available
+  const translations = {
+    estTaxesPerYear: { en: "Est. Taxes / Year:", de: "Geschätzte Steuern / Jahr:", fr: "Taxes estimées / an:", it: "Tasse stimate / anno:" },
+    difference: { en: "Difference:", de: "Differenz:", fr: "Différence:", it: "Differenza:" },
+    changePreferences: { en: "Change tax preferences", de: "Steuereinstellungen ändern", fr: "Modifier les préférences fiscales", it: "Modifica le preferenze fiscali" },
+    setLocationMessage: { en: "(Set your current location in extension options to see the difference)", de: "(Stellen Sie Ihren aktuellen Standort in den Erweiterungsoptionen ein, um die Differenz zu sehen)", fr: "(Définissez votre emplacement actuel dans les options de l'extension pour voir la différence)", it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)" },
+    perYear: { en: "p.a.", de: "p.a.", fr: "p.a.", it: "p.a." },
+    perMonth: { en: "p.m.", de: "p.m.", fr: "p.m.", it: "p.m." }
+  };
+
+  let locale = "en";
+  const lang = navigator.language.slice(0, 2);
+  if (["de", "fr", "it"].includes(lang)) {
+    locale = lang;
+  }
+
+  // Build the card markup with prefixed class names.
   const resultHTML = `
-        <div>
-          Est. Taxes / Year: <span style="font-size: 1.1em;">${formattedNewTax}</span>
-        </div>
-        ${oldTax > 0 ? `
-        <div>
-          Difference: <span style="color: ${diffColor};">${formattedDiff}</span> p.a.
-          (<span style="color: ${diffColor};">${formattedMonthlyDiff}</span> p.m.)
-        </div>` : `
-         <div>(Set your current location in extension options to see the difference)</div>
-        `}
-    `;
+    <div class="swisstaxcalculator_md-card">
+      <div class="swisstaxcalculator_md-title">
+        ${translations.estTaxesPerYear[locale]} <span class="swisstaxcalculator_md-value">${formattedNewTax}</span>
+      </div>
+      <div class="swisstaxcalculator_md-subtitle">
+        ${
+    oldTax > 0
+      ? `${translations.difference[locale]} <span style="color:${diffColor};">${formattedDiff}</span> ${translations.perYear[locale]}
+               (<span style="color:${diffColor};">${formattedMonthlyDiff}</span> ${translations.perMonth[locale]})`
+      : translations.setLocationMessage[locale]
+  }
+      </div>
+      <div class="swisstaxcalculator_md-actions">
+        <button id="changePreferencesBtn" class="swisstaxcalculator_md-button">
+          ${translations.changePreferences[locale]}
+        </button>
+      </div>
+    </div>
+  `;
 
-  // Find or create the result element
   let resultElement = document.getElementById(config.resultElementId);
-  if (resultElement) {
-    // Update existing element
-    resultElement.innerHTML = resultHTML;
-    console.log("SwissTaxCalculator: Updated existing result element.");
-  } else {
-    // Create and insert new element
-    resultElement = document.createElement('div');
+  if (!resultElement) {
+    resultElement = document.createElement("div");
     resultElement.id = config.resultElementId;
-    resultElement.style.marginTop = '8px'; // Adjusted margin
-    resultElement.style.marginBottom = '5px';
-    resultElement.style.padding = '5px';
-    resultElement.style.border = '1px solid #eee';
-    resultElement.style.borderRadius = '4px';
-    resultElement.style.backgroundColor = '#f9f9f9';
-    resultElement.style.fontWeight = 'normal'; // Changed from bold
-    if (config.resultContainerClass) {
-      // Try to apply a class for consistency, but keep base styles as fallback
-      resultElement.className = config.resultContainerClass;
-      resultElement.style.fontWeight = 'bold'; // Re-apply bold if using the original class
-    }
-    // Apply base font styles if class doesn't cover it
-    resultElement.style.fontFamily = resultElement.style.fontFamily || 'Arial, sans-serif';
-    resultElement.style.fontSize = resultElement.style.fontSize || '0.85em'; // Slightly larger
-    resultElement.style.lineHeight = '1.4';
-    resultElement.innerHTML = resultHTML;
+    if (config.resultContainerClass) resultElement.className = config.resultContainerClass;
+    anchorElement.insertAdjacentElement("afterend", resultElement);
+  }
+  resultElement.innerHTML = resultHTML;
 
-    // Insert the element - currently configured to go after the price element
-    if (typeof config.insertResult !== 'function') {
-      anchorElement.insertAdjacentElement('afterend', resultElement);
-      console.log("SwissTaxCalculator: Inserted new result element after anchor.");
-    } else {
-      debugger;
-      const anchor = config.insertResult();
-      anchor.insertAdjacentElement('afterend', resultElement);
-      console.log("SwissTaxCalculator: Inserted new result element after dynamic anchor.");
-    }
+  const btn = document.getElementById("changePreferencesBtn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      if (chrome && chrome.runtime) {
+        chrome.runtime.sendMessage({ action: "openOptionsPage" });
+      } else {
+        console.warn("chrome.runtime.openOptionsPage is not available.");
+      }
+    });
   }
 }
-
 
 // --- Main Execution Logic ---
 

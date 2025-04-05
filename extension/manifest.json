@@ -21,7 +21,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "options/data/**"
+        "options/data/**",
+        "options/styles/**"
       ],
       "matches":  [
         "*://*.newhome.ch/*",
@@ -45,7 +46,8 @@
       ],
       "js": [
         "contentScript.bundle.js"
-      ]
+      ],
+      "css": ["styles/injected.css"]
     }
   ]
 }

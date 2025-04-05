@@ -2949,65 +2949,68 @@
   }
   function displayTaxResults(anchorElement, calculationResult, config) {
     if (!anchorElement || !calculationResult || !config) {
-      console.warn("SwissTaxCalculator: Cannot display results - missing element, data, or config.");
+      console.warn("SwissTaxCalculator: Missing element, data, or config.");
       return;
     }
     const { new: newTax, old: oldTax } = calculationResult;
     const diff = newTax - oldTax;
     const monthlyDiff = diff / 12;
-    const niceRed = "#d9534f";
-    const niceGreen = "#5cb85c";
-    const neutralColor = "#555";
-    let diffColor = neutralColor;
-    if (oldTax > 0) {
-      diffColor = diff > 0 ? niceRed : diff < 0 ? niceGreen : neutralColor;
-    }
+    const COLORS = {
+      red: "#d9534f",
+      green: "#5cb85c",
+      neutral: "#555"
+    };
+    const diffColor = oldTax > 0 ? diff > 0 ? COLORS.red : diff < 0 ? COLORS.green : COLORS.neutral : COLORS.neutral;
     const formattedNewTax = formatCHF(newTax);
     const formattedDiff = `${diff > 0 ? "+" : ""}${formatCHF(diff)}`;
     const formattedMonthlyDiff = `${monthlyDiff > 0 ? "+" : ""}${formatCHF(Math.round(monthlyDiff))}`;
+    const translations = {
+      estTaxesPerYear: { en: "Est. Taxes / Year:", de: "Gesch\xE4tzte Steuern / Jahr:", fr: "Taxes estim\xE9es / an:", it: "Tasse stimate / anno:" },
+      difference: { en: "Difference:", de: "Differenz:", fr: "Diff\xE9rence:", it: "Differenza:" },
+      changePreferences: { en: "Change tax preferences", de: "Steuereinstellungen \xE4ndern", fr: "Modifier les pr\xE9f\xE9rences fiscales", it: "Modifica le preferenze fiscali" },
+      setLocationMessage: { en: "(Set your current location in extension options to see the difference)", de: "(Stellen Sie Ihren aktuellen Standort in den Erweiterungsoptionen ein, um die Differenz zu sehen)", fr: "(D\xE9finissez votre emplacement actuel dans les options de l'extension pour voir la diff\xE9rence)", it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)" },
+      perYear: { en: "p.a.", de: "p.a.", fr: "p.a.", it: "p.a." },
+      perMonth: { en: "p.m.", de: "p.m.", fr: "p.m.", it: "p.m." }
+    };
+    let locale = "en";
+    const lang = navigator.language.slice(0, 2);
+    if (["de", "fr", "it"].includes(lang)) {
+      locale = lang;
+    }
     const resultHTML = `
-        <div>
-          Est. Taxes / Year: <span style="font-size: 1.1em;">${formattedNewTax}</span>
-        </div>
-        ${oldTax > 0 ? `
-        <div>
-          Difference: <span style="color: ${diffColor};">${formattedDiff}</span> p.a.
-          (<span style="color: ${diffColor};">${formattedMonthlyDiff}</span> p.m.)
-        </div>` : `
-         <div>(Set your current location in extension options to see the difference)</div>
-        `}
-    `;
+    <div class="swisstaxcalculator_md-card">
+      <div class="swisstaxcalculator_md-title">
+        ${translations.estTaxesPerYear[locale]} <span class="swisstaxcalculator_md-value">${formattedNewTax}</span>
+      </div>
+      <div class="swisstaxcalculator_md-subtitle">
+        ${oldTax > 0 ? `${translations.difference[locale]} <span style="color:${diffColor};">${formattedDiff}</span> ${translations.perYear[locale]}
+               (<span style="color:${diffColor};">${formattedMonthlyDiff}</span> ${translations.perMonth[locale]})` : translations.setLocationMessage[locale]}
+      </div>
+      <div class="swisstaxcalculator_md-actions">
+        <button id="changePreferencesBtn" class="swisstaxcalculator_md-button">
+          ${translations.changePreferences[locale]}
+        </button>
+      </div>
+    </div>
+  `;
     let resultElement = document.getElementById(config.resultElementId);
-    if (resultElement) {
-      resultElement.innerHTML = resultHTML;
-      console.log("SwissTaxCalculator: Updated existing result element.");
-    } else {
+    if (!resultElement) {
       resultElement = document.createElement("div");
       resultElement.id = config.resultElementId;
-      resultElement.style.marginTop = "8px";
-      resultElement.style.marginBottom = "5px";
-      resultElement.style.padding = "5px";
-      resultElement.style.border = "1px solid #eee";
-      resultElement.style.borderRadius = "4px";
-      resultElement.style.backgroundColor = "#f9f9f9";
-      resultElement.style.fontWeight = "normal";
-      if (config.resultContainerClass) {
+      if (config.resultContainerClass)
         resultElement.className = config.resultContainerClass;
-        resultElement.style.fontWeight = "bold";
-      }
-      resultElement.style.fontFamily = resultElement.style.fontFamily || "Arial, sans-serif";
-      resultElement.style.fontSize = resultElement.style.fontSize || "0.85em";
-      resultElement.style.lineHeight = "1.4";
-      resultElement.innerHTML = resultHTML;
-      if (typeof config.insertResult !== "function") {
-        anchorElement.insertAdjacentElement("afterend", resultElement);
-        console.log("SwissTaxCalculator: Inserted new result element after anchor.");
-      } else {
-        debugger;
-        const anchor = config.insertResult();
-        anchor.insertAdjacentElement("afterend", resultElement);
-        console.log("SwissTaxCalculator: Inserted new result element after dynamic anchor.");
-      }
+      anchorElement.insertAdjacentElement("afterend", resultElement);
+    }
+    resultElement.innerHTML = resultHTML;
+    const btn = document.getElementById("changePreferencesBtn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        if (chrome && chrome.runtime) {
+          chrome.runtime.sendMessage({ action: "openOptionsPage" });
+        } else {
+          console.warn("chrome.runtime.openOptionsPage is not available.");
+        }
+      });
     }
   }
   async function runTaxCalculator() {
