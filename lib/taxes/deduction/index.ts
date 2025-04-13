@@ -307,7 +307,6 @@ export const calculateDeductionByDefinition = (
       const amountBund = deductionBund
         ? calculateDeductionByFormat(deductionBund, deductionInput.amount)
         : dineroChf(amountOverride);
-      debugger;
       const deduction: TaxDeductionResultItem = {
         id: deductionDefinition.id,
         name:

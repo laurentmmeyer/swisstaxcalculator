@@ -2076,7 +2076,6 @@ var calculateDeductionByDefinition = (deductionDefinition, taxInput, taxType, gr
       const amountOverride = deductionDefinition.applyAlways ? deductionInput.amount ?? 0 : 0;
       const amountCanton = deductionCanton ? calculateDeductionByFormat(deductionCanton, deductionInput.amount) : dineroChf(amountOverride);
       const amountBund = deductionBund ? calculateDeductionByFormat(deductionBund, deductionInput.amount) : dineroChf(amountOverride);
-      debugger;
       const deduction = {
         id: deductionDefinition.id,
         name: deductionDefinition.name ?? deductionCanton?.name.de ?? deductionBund?.name.de ?? "Unbekannter Abzug",
@@ -2689,7 +2688,8 @@ var calculateTaxableAmount = async (taxInput) => {
         amountCanton: dineroToNumber(item.amountCanton),
         amountBund: dineroToNumber(item.amountBund),
         name: item.name,
-        target: item.target
+        target: item.target,
+        label: item.label
       })
     ),
     taxableFortuneCanton,

@@ -587,11 +587,6 @@ const t = (key: string): string => {
       it: "Contributi cassa pensione"
     }
   };
-  try {
-    console.log(translations[key][locale.value]);
-  }catch (e){
-    debugger;
-  }
   return translations[key][locale.value];
 };
 
@@ -717,6 +712,9 @@ const submit = async (value: any, node?: FormKitNode) => {
       chrome.storage.sync.set({ taxInput }, function() {
         console.log("Saved:", JSON.stringify(taxInput));
       });
+    }
+    if(chrome && chrome.runtime){
+      chrome.runtime.sendMessage({ action: "analytics", name:"UpdateTax", params: {} });
     }
     const result = await calculateTaxes(taxInput as TaxInput);
     taxes.value = result;
