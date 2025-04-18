@@ -2814,7 +2814,7 @@
   var siteConfigs = {
     "www.newhome.ch": {
       placeSelector: '[itemtype="https://schema.org/Place"]',
-      priceSelector: '[data-cy="price"]',
+      priceSelector: '[data-cy="price"], app-price-not-negotiable',
       // Regex to find a 4-digit postal code (group 1) and the city name (group 2)
       locationRegex: /\s*(\d{4})\s+(.+)/,
       resultElementId: "swiss-tax-calculator-result",
@@ -2884,12 +2884,13 @@
     //   resultContainerClass: 'price-breakdown__item',
     //   insertResult: true
     // },
-    "default": {
+    default: {
       // Optional: Define default behavior or leave empty to do nothing on unsupported sites
       logUnsupported: true
       // Example flag to log if a site isn't explicitly configured
     }
   };
+  var sentUrls = /* @__PURE__ */ new Set();
   function formatCHF(amount) {
     const formatter = new Intl.NumberFormat("de-CH", {
       style: "decimal",
@@ -2900,9 +2901,11 @@
   }
   function getConfigForCurrentHost() {
     const hostname = window.location.hostname;
-    const config = siteConfigs[hostname] || siteConfigs["default"] || null;
+    const config = siteConfigs[hostname] || siteConfigs.default || null;
     if (config?.logUnsupported && !siteConfigs[hostname]) {
-      console.log(`SwissTaxCalculator: No specific configuration for host "${hostname}". Using default.`);
+      console.log(
+        `SwissTaxCalculator: No specific configuration for host "${hostname}". Using default.`
+      );
     } else if (!config) {
       console.log(`SwissTaxCalculator: No configuration found for host "${hostname}".`);
     }
@@ -2915,7 +2918,9 @@
     }
     const element = document.querySelector(selector);
     if (!element) {
-      console.warn(`SwissTaxCalculator: ${description} element not found using selector: ${selector}`);
+      console.warn(
+        `SwissTaxCalculator: ${description} element not found using selector: ${selector}`
+      );
     }
     return element;
   }
@@ -2927,13 +2932,18 @@
     const placeText = placeElement.textContent || "";
     const match = placeText.match(config.locationRegex);
     if (!match || match.length < 3) {
-      console.warn("SwissTaxCalculator: Postal code or city not found in place element using regex:", config.locationRegex.toString());
+      console.warn(
+        "SwissTaxCalculator: Postal code or city not found in place element using regex:",
+        config.locationRegex.toString()
+      );
       return null;
     }
     const postalCode = match[1];
     const city = match[2].trim();
     if (!/^\d{4}$/.test(postalCode) || !city) {
-      console.warn(`SwissTaxCalculator: Extracted invalid data. Postal Code: "${postalCode}", City: "${city}"`);
+      console.warn(
+        `SwissTaxCalculator: Extracted invalid data. Postal Code: "${postalCode}", City: "${city}"`
+      );
       return null;
     }
     console.log("SwissTaxCalculator: Found Postal Code:", postalCode);
@@ -2962,7 +2972,10 @@
       const taxInput = await new Promise((resolve) => {
         chrome.storage.sync.get("taxInput", (data) => {
           if (chrome.runtime.lastError) {
-            console.error("SwissTaxCalculator: Error retrieving taxInput from storage:", chrome.runtime.lastError);
+            console.error(
+              "SwissTaxCalculator: Error retrieving taxInput from storage:",
+              chrome.runtime.lastError
+            );
           }
           if (data?.taxInput) {
             console.log("SwissTaxCalculator: Using saved tax input data.");
@@ -2976,14 +2989,16 @@
               // locationId will be set below for 'old' calculation
               relationship: "s",
               year,
-              persons: [{
-                age: 30,
-                confession: "roman",
-                // Consider making confession configurable or using 'other'/'none'
-                income: 1e5,
-                incomeType: "gross",
-                pkDeduction: 5e3
-              }]
+              persons: [
+                {
+                  age: 30,
+                  confession: "roman",
+                  // Consider making confession configurable or using 'other'/'none'
+                  income: 1e5,
+                  incomeType: "gross",
+                  pkDeduction: 5e3
+                }
+              ]
               // cantonId will be set below for 'old' calculation
             });
           }
@@ -2994,7 +3009,9 @@
       if (taxInput.locationId && taxInput.cantonId) {
         oldTaxesResult = await calculateTaxes(taxInput);
       } else {
-        console.warn("SwissTaxCalculator: Stored tax input missing locationId or cantonId. Cannot calculate 'old' taxes accurately.");
+        console.warn(
+          "SwissTaxCalculator: Stored tax input missing locationId or cantonId. Cannot calculate 'old' taxes accurately."
+        );
       }
       const newTaxInput = { ...taxInput, locationId: bfsId, cantonId };
       const newTaxesResult = await calculateTaxes(newTaxInput);
@@ -3030,10 +3047,25 @@
     const formattedDiff = `${diff > 0 ? "+" : ""}${formatCHF(diff)}`;
     const formattedMonthlyDiff = `${monthlyDiff > 0 ? "+" : ""}${formatCHF(Math.round(monthlyDiff))}`;
     const translations = {
-      estTaxesPerYear: { en: "Est. Taxes / Year:", de: "Gesch\xE4tzte Steuern / Jahr:", fr: "Taxes estim\xE9es / an:", it: "Tasse stimate / anno:" },
+      estTaxesPerYear: {
+        en: "Est. Taxes / Year:",
+        de: "Gesch\xE4tzte Steuern / Jahr:",
+        fr: "Taxes estim\xE9es / an:",
+        it: "Tasse stimate / anno:"
+      },
       difference: { en: "Difference:", de: "Differenz:", fr: "Diff\xE9rence:", it: "Differenza:" },
-      changePreferences: { en: "Change tax preferences", de: "Steuereinstellungen \xE4ndern", fr: "Modifier les pr\xE9f\xE9rences fiscales", it: "Modifica le preferenze fiscali" },
-      setLocationMessage: { en: "(Set your current location in extension options to see the difference)", de: "(Stellen Sie Ihren aktuellen Standort in den Erweiterungsoptionen ein, um die Differenz zu sehen)", fr: "(D\xE9finissez votre emplacement actuel dans les options de l'extension pour voir la diff\xE9rence)", it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)" },
+      changePreferences: {
+        en: "Change tax preferences",
+        de: "Steuereinstellungen \xE4ndern",
+        fr: "Modifier les pr\xE9f\xE9rences fiscales",
+        it: "Modifica le preferenze fiscali"
+      },
+      setLocationMessage: {
+        en: "(Set your current location in extension options to see the difference)",
+        de: "(Stellen Sie Ihren aktuellen Standort in den Erweiterungsoptionen ein, um die Differenz zu sehen)",
+        fr: "(D\xE9finissez votre emplacement actuel dans les options de l'extension pour voir la diff\xE9rence)",
+        it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)"
+      },
       perYear: { en: "p.a.", de: "p.a.", fr: "p.a.", it: "p.a." },
       perMonth: { en: "p.m.", de: "p.m.", fr: "p.m.", it: "p.m." }
     };
@@ -3094,6 +3126,21 @@
       const locationInfo = extractLocationInfo(placeElement, config);
       if (!locationInfo)
         return;
+      const url = window.location.href;
+      const hostname = window.location.hostname;
+      if (chrome && chrome.runtime && !sentUrls.has(url)) {
+        console.log("Analytics:", locationInfo.postalCode, locationInfo.city, hostname, sentUrls, url);
+        sentUrls.add(url);
+        chrome.runtime.sendMessage({
+          action: "analytics",
+          name: "CalculateTax",
+          params: {
+            postalCode: locationInfo.postalCode,
+            city: locationInfo.city,
+            website: hostname
+          }
+        });
+      }
       const calculationResult = await calculateTaxesAsync(locationInfo.postalCode, locationInfo.city);
       if (!calculationResult) {
         console.warn("SwissTaxCalculator: Tax calculation failed or returned no result.");
