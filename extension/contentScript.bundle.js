@@ -3048,10 +3048,10 @@
     const formattedMonthlyDiff = `${monthlyDiff > 0 ? "+" : ""}${formatCHF(Math.round(monthlyDiff))}`;
     const translations = {
       estTaxesPerYear: {
-        en: "Est. Taxes / Year:",
-        de: "Gesch\xE4tzte Steuern / Jahr:",
-        fr: "Taxes estim\xE9es / an:",
-        it: "Tasse stimate / anno:"
+        en: "Est. Taxes / Year*:",
+        de: "Gesch\xE4tzte Steuern / Jahr*:",
+        fr: "Taxes estim\xE9es / an*:",
+        it: "Tasse stimate / anno*:"
       },
       difference: { en: "Difference:", de: "Differenz:", fr: "Diff\xE9rence:", it: "Differenza:" },
       changePreferences: {
@@ -3067,7 +3067,13 @@
         it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)"
       },
       perYear: { en: "p.a.", de: "p.a.", fr: "p.a.", it: "p.a." },
-      perMonth: { en: "p.m.", de: "p.m.", fr: "p.m.", it: "p.m." }
+      perMonth: { en: "p.m.", de: "p.m.", fr: "p.m.", it: "p.m." },
+      "warning": {
+        "en": "* These tax amounts are only estimations and should be checked with a professional.",
+        "de": "* Diese Steuerbetr\xE4ge sind nur Sch\xE4tzungen und sollten von einem Fachmann \xFCberpr\xFCft werden.",
+        "fr": "* Ces montants d\u2019imp\xF4ts ne sont que des estimations et doivent \xEAtre v\xE9rifi\xE9s par un professionnel.",
+        "it": "* Questi importi fiscali sono solo stime e dovrebbero essere verificati da un professionista."
+      }
     };
     let locale = "en";
     const lang = navigator.language.slice(0, 2);
@@ -3087,6 +3093,9 @@
         <button id="changePreferencesBtn" class="swisstaxcalculator_md-button">
           ${translations.changePreferences[locale]}
         </button>
+      </div>
+      <div style="font-size: xx-small; font-style: italic; padding-top: 8px;">
+      ${translations.warning[locale]}
       </div>
     </div>
   `;
@@ -3129,7 +3138,6 @@
       const url = window.location.href;
       const hostname = window.location.hostname;
       if (chrome && chrome.runtime && !sentUrls.has(url)) {
-        console.log("Analytics:", locationInfo.postalCode, locationInfo.city, hostname, sentUrls, url);
         sentUrls.add(url);
         chrome.runtime.sendMessage({
           action: "analytics",

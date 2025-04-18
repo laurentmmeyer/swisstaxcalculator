@@ -309,10 +309,10 @@ function displayTaxResults(anchorElement, calculationResult, config) {
 
   const translations = {
     estTaxesPerYear: {
-      en: 'Est. Taxes / Year:',
-      de: 'Geschätzte Steuern / Jahr:',
-      fr: 'Taxes estimées / an:',
-      it: 'Tasse stimate / anno:'
+      en: 'Est. Taxes / Year*:',
+      de: 'Geschätzte Steuern / Jahr*:',
+      fr: 'Taxes estimées / an*:',
+      it: 'Tasse stimate / anno*:'
     },
     difference: { en: 'Difference:', de: 'Differenz:', fr: 'Différence:', it: 'Differenza:' },
     changePreferences: {
@@ -328,7 +328,13 @@ function displayTaxResults(anchorElement, calculationResult, config) {
       it: "(Imposta la tua posizione attuale nelle opzioni dell'estensione per vedere la differenza)"
     },
     perYear: { en: 'p.a.', de: 'p.a.', fr: 'p.a.', it: 'p.a.' },
-    perMonth: { en: 'p.m.', de: 'p.m.', fr: 'p.m.', it: 'p.m.' }
+    perMonth: { en: 'p.m.', de: 'p.m.', fr: 'p.m.', it: 'p.m.' },
+    "warning": {
+      "en": "* These tax amounts are only estimations and should be checked with a professional.",
+      "de": "* Diese Steuerbeträge sind nur Schätzungen und sollten von einem Fachmann überprüft werden.",
+      "fr": "* Ces montants d’impôts ne sont que des estimations et doivent être vérifiés par un professionnel.",
+      "it": "* Questi importi fiscali sono solo stime e dovrebbero essere verificati da un professionista."
+    }
   };
 
   let locale = 'en';
@@ -357,6 +363,9 @@ function displayTaxResults(anchorElement, calculationResult, config) {
         <button id="changePreferencesBtn" class="swisstaxcalculator_md-button">
           ${translations.changePreferences[locale]}
         </button>
+      </div>
+      <div style="font-size: xx-small; font-style: italic; padding-top: 8px;">
+      ${translations.warning[locale]}
       </div>
     </div>
   `;
